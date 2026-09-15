@@ -19,3 +19,4 @@ _ew_*.js
 # --- 系统文件 ---
 Thumbs.db
 .DS_Store
+results/smoke*.json
