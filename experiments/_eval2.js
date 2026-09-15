@@ -26,6 +26,9 @@ const TAG = process.argv[8] || 'exp';
 const PARAMS = process.argv[9] && process.argv[9] !== 'null' ? JSON.parse(process.argv[9]) : null;
 const SEEDBASE = process.argv[10] !== undefined && process.argv[10] !== 'null' ? parseInt(process.argv[10], 10) : null;
 const PARAMS_SRC = JSON.stringify(PARAMS);
+// --maxold N：worker 堆上限 MB（6x8 TD 网络评估需 1280+；默认 768）
+let MAXOLD = 768;
+{ const i = process.argv.indexOf('--maxold'); if (i > 0) MAXOLD = parseInt(process.argv[i + 1], 10) || 768; }
 
 const workerFile = path.join(__dirname, `_ew2_${TAG}.js`);
 fs.writeFileSync(workerFile, `
@@ -33,6 +36,10 @@ const path = require('path');
 const E = require(path.resolve(process.cwd(), ${JSON.stringify(engine)}));
 const PARAMS = ${PARAMS_SRC};
 if (PARAMS) E.setParams(PARAMS);
+if (PARAMS && PARAMS.tdNetPath) {
+  const { TDNet } = require(path.resolve(process.cwd(), '_td_net.js'));
+  E.setTdNet(TDNet.load(PARAMS.tdNetPath));
+}
 const PER = ${PER}, DEPTH = ${DEPTH}, LIMIT = ${LIMIT}, BUDGET = ${BUDGET};
 const SEEDBASE = ${SEEDBASE === null ? 'null' : SEEDBASE};
 const wIdx = parseInt(process.env.WIDX || '0', 10);
@@ -102,7 +109,7 @@ for (let p = 0; p < NPROC; p++) {
   const c = fork(workerFile, [], {
     env: Object.assign({}, process.env, { WIDX: String(p) }),
     stdio: ['ignore', 'ignore', 'ignore', 'ipc'],
-    execArgv: ['--max-old-space-size=768']
+    execArgv: [`--max-old-space-size=${MAXOLD}`]
   });
   children.push(c);
   c.on('message', (arr) => { all.push(...arr); done++; if (done === NPROC) finish(); });

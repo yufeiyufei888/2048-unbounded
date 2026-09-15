@@ -1,0 +1,47 @@
+{
+ "tag": "evolve_base_445",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "base": 4.45
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 86015.6,
+ "median": 79960,
+ "p90": 132880,
+ "best": 168036,
+ "worst": 8008,
+ "top5": [
+  168036,
+  167644,
+  157520,
+  157508,
+  157232
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9833333333333333,
+  "4096": 0.8666666666666667,
+  "8192": 0.3,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0083,
+ "avgSteps": 3817,
+ "medianSteps": 3712,
+ "elapsedSec": 584.8,
+ "gamesPerMin": 12.3,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T14:35:07.679Z"
+}

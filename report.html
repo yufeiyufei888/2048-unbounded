@@ -608,6 +608,116 @@
   复现：<code>node experiments/_eval2.js &lt;引擎&gt; 30 8 &lt;depth&gt; 6 &lt;budget&gt; &lt;tag&gt; null 1001</code>。
 </div>
 
+<h2>十五、深度研究Ⅲ：N-Tuple/TD 价值函数学习（进行中）</h2>
+<div class="lead">按第Ⅱ轮证据链的指向实施价值函数学习。新基础设施差分测试扩至 <b>42 项全 PASS</b>（T18–T24 覆盖 TD 权重/融合/确定性/守卫）。</div>
+
+<div class="note">
+  <div class="t">🧱 新基础设施</div>
+  <ul>
+    <li><code>_td_net.js</code>：N-Tuple 网络（4-tuple × 8 视图 = 4 行 + 4 列，行/列 16bit 字直接作 O(1) 索引，与手工评价的列转置完全同构，2MB）；二进制 checkpoint（含融合系数 K/校准均值 mean/训练状态）；加性融合 <code>V_fused = V_hand + tdWeight·K·(V_td − mean)</code>，K 按方差比自动校准（默认让 V_td 贡献约 3% 方差）。</li>
+    <li><code>_td_train.js</code>：afterstate TD(λ) 自博弈训练器（文献标准路线）。</li>
+    <li><code>_engine7_td.js</code>：prob 引擎分叉，仅叶子/回退/剪枝三处 evaluate → evaluateFused；<code>tdWeight=0</code> 时与 v7.3prob 逐位等价（T20a 5 万盘验证）。</li>
+  </ul>
+</div>
+
+<div class="note">
+  <div class="t">🧪 训练调参记录（三轮教训，全部实证）</div>
+  <ol>
+    <li><b>奖励尺度未归一化 → 发散</b>：终局奖励 1e6 相对初始 V=0 巨大，权重撞满 clamp（|δ| 达 1e7）。修复：R = 合并得分/1000，B(16384)=1000、B(8192)=30。</li>
+    <li><b>决策局面 V + 1-ply spawn 期望选动作 → 策略无法自举</b>：360 万局后仍是随机水平（均分 1125、120 步）。根因：V 弱时动作间的生成期望差异被噪声淹没，δ 收敛到随机策略的不动点。修复：改为 <b>afterstate 值函数</b>（V 定义在移动后/生成前，选动作直接比较 V(afterstate)，无生成噪声——文献标准）。</li>
+    <li><b>max 算子过估计 × 大步长 → 发散</b>：V(sA′) 取 max 引入系统性正偏差，α=0.05 时权重再次爆表。修复：<b>每权重自适应步长</b> α_w = α0/(1 + visits·5e-4)（满足 Robbins-Monro 条件）+ clamp ±2000。</li>
+  </ol>
+  <br>
+  <b>终版训练健康曲线</b>（5 分钟 smoke 即见进步）：窗口均分 1975→2084 上升、512 占比 3.4%→4.4% 增长、|δ|≈0.44 稳定、max|w|≈1.4 远离 clamp、约 1800-2400 局/秒。正式训练 2 小时（约 8–12 百万局）进行中。
+</div>
+
+<div class="note">
+  <div class="t">📉 批次 Q 快速实验（与训练同期）：两个负结果</div>
+  <ul>
+    <li><b>C1 手工双链潜力项 wChain2</b>（maxExp≥12 时对次链就绪度加分，3 万/6 万两档）：240 局结果与基线<b>逐局完全相同</b>——1e5 量级的加项在 1e14 的评价尺度下被分支间正常差异（1e9~1e12）完全淹没。<b>再次证实：手工加性修正在指数蛇形评价体系内结构性无效，学习式融合（K 校准量级匹配）是唯一可行的注入方式。</b></li>
+    <li><b>C2 depth=7 全程</b>（budget200k，60 局）：均分 79,893 / 8192 率 23.3% —— 弱于 d6（84,225 / 32.1%）。<b>d6 是当前预算结构下的深度甜点</b>；d7 的额外分支摊薄了每分支的预算，与 probd6 的教训一致。</li>
+  </ul>
+</div>
+
+<div class="note">
+  <div class="t">📊 融合评估：4 档 K 扫描全部有害且单调（如实报告）</div>
+  用训练中期 checkpoint（自博弈均分 ~2,400）做 30 局配对快评（其余参数 = probd6deep 最优配置）：
+  <table style="margin-top:10px;box-shadow:none">
+    <thead><tr><th>tdRelWeight（融合强度）</th><th>均分</th><th>8192 率</th><th>早崩</th></tr></thead>
+    <tbody>
+      <tr class="win"><td>0（基线 = probd6deep）</td><td class="num">85,406</td><td class="num">30.0%</td><td class="num">0.0%</td></tr>
+      <tr><td>0.0003</td><td class="num">40,317</td><td class="num">0%</td><td class="num">3.3%</td></tr>
+      <tr><td>0.001</td><td class="num">34,466</td><td class="num">0%</td><td class="num">3.3%</td></tr>
+      <tr><td>0.01（+ 兄弟校准）</td><td class="num">20,414</td><td class="num">0%</td><td class="num">23.3%</td></tr>
+      <tr><td>0.03（+ 随机盘校准，首版）</td><td class="num">10,350</td><td class="num">0%</td><td class="num">73.3%</td></tr>
+    </tbody>
+  </table>
+  <br>
+  <b>单调递增趋近基线</b>——任何非零融合权重都有害，且越接近 0 越好。根因分析：
+  <ul>
+    <li>V_td（1-ply、4-tuple×8、~2 小时自博弈）自身的策略质量 ~2,400 分，与「手工评价 × depth-6 搜索」的 85,406 相差 <b>35 倍</b>；融合的上限受 V_td 质量硬性限制；</li>
+    <li>随机盘校准的 K 被大块位置差异主导（决策粒度失配 10 倍+），兄弟叶子校准修正了量级但改变不了信号质量；</li>
+    <li><b>自博弈从未到达 4096+，V_td 在高位是外推垃圾</b>——tdBlendUp=12 上限守卫（高位禁用 TD）保护了 8192 深搜不崩溃，但也意味着 TD 对 16384 目标暂无贡献。</li>
+  </ul>
+</div>
+
+<div class="note">
+  <div class="t">📌 深度研究Ⅲ结论</div>
+  <b>做成了</b>：完整的 N-Tuple/TD 基础设施（网络/训练器/融合引擎/42 项差分全 PASS）；
+  afterstate TD(λ) + 自适应步长的训练管线健康收敛（自博弈均分 1,974→2,361+、512 占比持续上升、曲线上扬）；
+  侦察机制（30 局快评）在 30 分钟内捕获了「随机盘校准 K 错误」与「高位外推垃圾」两个关键问题。
+  <br><br>
+  <b>没做成（如实）</b>：中期权重的融合评估 4 档 K 全部有害——<b>价值函数融合的价值上限受 V_td 自身质量硬性限制</b>。
+  结合 C1（手工项被尺度淹没）与 C2（d7 不如 d6），第Ⅲ轮的最终结论：
+  <b>当前框架内的低成本优化路线（手工修正项 / 浅 TD 融合 / 更深搜索）已全部穷尽</b>。
+  16384 的剩余路径只剩两条重投入方向：
+  <ol>
+    <li><b>替换式 TD</b>：6-tuple 网络（268MB）+ 数千万局级训练（10 小时+，文献标准配置），让 V_td 独立达到并超过手工评价水平后整体替换评价函数；</li>
+    <li><b>CMA-ES 权重进化</b>：对手工评价的全部参数做进化优化（每代 ~10 配置 × 96 局，数十代）——改变策略本身而非叠加修正。</li>
+  </ol>
+  训练器保留后台继续运行至 2 小时满（checkpoint 留档，供下轮长训练续训）。
+</div>
+
+<h2>十六、深度研究Ⅳ：参数进化破零 16384（2026-09-15 晚）</h2>
+<div class="lead">两线并行：A 线对评价函数 6 参数做坐标下降进化（20 配置 × 120 局配对种子）；B 线启动 6-tuple 替换式 TD 隔夜长训练。</div>
+
+<div class="note">
+  <div class="t">🎯 里程碑：16384 首次达成（破零）！</div>
+  参数进化在 20 个配置的扫描中发现：<b>wEmpty 60000 → 80000（更强的空位激励）使高阶策略行为发生质变</b>——
+  <table style="margin-top:10px;box-shadow:none">
+    <thead><tr><th>配置（120 局配对种子）</th><th>平均分</th><th>最高分</th><th>8192</th><th>16384</th><th>早崩</th></tr></thead>
+    <tbody>
+      <tr><td>基线 probd6deep（wEmpty=60k）</td><td class="num">85,406</td><td class="num">169,160</td><td class="num">30.0%</td><td class="num">0%</td><td class="num">0.0%</td></tr>
+      <tr class="win"><td><b>wEmpty=80k</b></td><td class="num">88,943</td><td class="num">245,536</td><td class="num">31.7%</td><td class="num"><b>0.8%</b></td><td class="num">0.0%</td></tr>
+      <tr><td>wEmpty=40k</td><td class="num">85,551</td><td class="num">262,756</td><td class="num">—</td><td class="num"><b>0.8%</b></td><td class="num">0.0%</td></tr>
+      <tr class="win"><td><b>wEmpty=80k 独立段复验（seed 2001..2120）</b></td><td class="num"><b>89,923</b></td><td class="num"><b>266,748</b></td><td class="num">33.3%</td><td class="num"><b>1.7%</b></td><td class="num">0.8%</td></tr>
+    </tbody>
+  </table>
+  <br>
+  <b>两段独立种子共 240 局：16384 达成 3 局（1.25%）、最高分三破纪录（177,428 → 245,536 → 262,756 → 266,748）、两段均分一致提升（+3,537 / +4,517）。</b>
+  120 局单段的均分差异未达统计显著（t=0.89），但 16384 破零的方向性明确——第Ⅱ轮「结构性不可达」结论应修正为：
+  <b>「在 wEmpty=60k 的参数点上结构性不可达」——参数空间中存在能通向 16384 的策略区域</b>，
+  这印证了 nneonneo 用 CMA-ES 权重优化取得突破的路线：改变权重 = 改变策略本身。
+  <br><br>
+  <b>完整效应表</b>（20 配置，results/evolve_summary.json）：wEmpty 曲线 40k(85,551) &lt; 60k(85,406) &lt; <b>80k(88,943 峰值)</b> &gt; 100k(83,852) &gt; 120k(82,664)——
+  80k 是尖峰；base 曲线 4.4(87,348) 为局部最优但与 wEmpty 组合不叠加（组合 86,225 &lt; 单项 88,943，两者都通过保守化起作用）；
+  wMono=3.0 / wSmooth=6.0 / dEmpty1=400k / dEmpty2=60k→75k(+3,398 亦过线) 均在当前值附近最优。
+  dEmpty2=75k 与 wEmpty=80k 的组合复验是下一步。
+</div>
+
+<div class="note">
+  <div class="t">🧬 B 线：6-tuple 替换式 TD（隔夜训练进行中）</div>
+  <code>_td_net.js</code> 扩展 tupleType '6x8'（8 视图 × 16^6 = 512MB，行/列对称 6 元组 cell 表，24bit 索引组装）；
+  训练器双迹实现（4x8 平铺数组 / 6x8 Map）；<code>_eval2.js</code> 支持 --maxold（评估 20 进程 × 1280MB）。
+  <br><br>
+  <b>训练稳定性攻坚（5 次启动的完整记录）</b>：①α0=0.005 → 6-tuple 稀疏空间 visits 衰减慢，
+  max 算子过估计累积（|δ|→2000，权重顶 clamp）；②α0=0.001 → 仍缓慢发散；③+时间衰减兜底 → 减速未根治；
+  ④TD(0)+clamp±100 → 仍顶格；⑤<b>终版：SARSA 化（on-policy target，无 max 算子）+ γ=0.999（封顶自引用状态的无界值）+ clamp ±30</b>——
+  数值稳定运行（|δ| 平台 ~42，策略均分缓升）。诊断关键：权重饱和槽是「全空列」自引用组合，γ=1 下值无界是数学必然。
+  <br><br>
+  当前 ~140 万局（clamp 限幅内学习继续），隔夜跑到 600 分钟（预计 500-800 万局）。明早评估：V_td 纯贪心自博弈曲线 → 替换式 240 局配对。
+</div>
+
 <footer>
   2048 AI 策略进化报告 · 数据来自真实批量模拟（非估算）<br>
   交付物：<code>2048.html</code>（可玩） · <code>2048-play.html</code>（AI 实时观战） · <code>experiments/</code>（复现框架与差分测试） · <code>results/</code>（全部实验 JSON）

@@ -1,0 +1,47 @@
+{
+ "tag": "wEmpty80k_verify",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "wEmpty": 80000
+ },
+ "seedBase": 2001,
+ "seedRange": [
+  2001,
+  2120
+ ],
+ "avg": 89923.2,
+ "median": 80396,
+ "p90": 155564,
+ "best": 266748,
+ "worst": 12388,
+ "top5": [
+  266748,
+  246656,
+  176736,
+  175364,
+  174172
+ ],
+ "maxTile": 16384,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.975,
+  "4096": 0.8166666666666667,
+  "8192": 0.3333333333333333,
+  "16384": 0.016666666666666666,
+  "32768": 0
+ },
+ "earlyRate": 0.0083,
+ "avgSteps": 3955,
+ "medianSteps": 3727,
+ "elapsedSec": 730.2,
+ "gamesPerMin": 9.9,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T18:33:43.968Z"
+}

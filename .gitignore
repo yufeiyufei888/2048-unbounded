@@ -16,6 +16,14 @@ _ew_*.js
 *.cpuprofile
 *.log
 
+# --- 大型二进制（TD 权重 checkpoint；td_net_latest.bin 4x8 例外强制入库）---
+*.bin
+!td_net_latest.bin
+td_net_ckpt_*.bin
+td_final.bin
+td_scout.bin
+td6_smoke.bin
+
 # --- 系统文件 ---
 Thumbs.db
 .DS_Store

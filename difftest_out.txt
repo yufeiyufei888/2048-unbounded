@@ -1,0 +1,63 @@
+T1 moveDir vs 朴素参考（10万棋盘 × 4方向）
+  PASS T1 moveDir 全方向一致 | 坏例=0/400000 有效移动=398005
+T2 evaluate vs 朴素参考 + _ref_eval.js 交叉核对
+  PASS T2a evaluate(v7.1 参数) ≈ 朴素参考 | 坏例=0/100000 最大相对差=3.01e-16
+  PASS T2b evaluate(v3 参数) ≈ _ref_eval.js | 坏例=0/100000 最大相对差=0.00e+0
+T3 增量版 evaluate 与基线逐位一致
+  PASS T3 逐位一致 (===) | 不一致=0/200000
+  PASS T3b 风险版 evaluate 与 ttfix 逐位一致 | 不一致=0/200000
+T4 countEmpty 与朴素计数一致
+  PASS T4 空位计数一致 | 坏例=0/200000
+T5 新方块只写入空格（位移公式回环 + 空位集合一致）
+  PASS T5 OR 写入只影响目标空格 | 坏例=0
+T6 生成方块 2/4 概率统计
+  PASS T6 P(4)≈0.1 | P(4)=0.1008
+T7/T8 种子可复现性与 TT 跨局隔离
+  PASS T7 v7.1-baseline 同seed一致/异seed不同 | seed777: 27596/1457/11 vs 27596/1457/11; seed778: 7012/474/9
+  PASS T7 v7.2-ttfix 同seed一致/异seed不同 | seed777: 4200/322/8 vs 4200/322/8; seed778: 14816/871/10
+  PASS T7 v7.2-risk 同seed一致/异seed不同 | seed777: 4200/322/8 vs 4200/322/8; seed778: 14816/871/10
+  PASS T7 v7.2-inc 同seed一致/异seed不同 | seed777: 4200/322/8 vs 4200/322/8; seed778: 14816/871/10
+  PASS T7 v7.2-phase 同seed一致/异seed不同 | seed777: 4200/322/8 vs 4200/322/8; seed778: 14816/871/10
+T9 增量版 bestMove 与 ttfix 同种子一致（无预算截断）
+  PASS T9 大预算动作一致 | 399/399
+T10 风险版 λ=0 与 ttfix 等价；λ>0 正常运行
+  PASS T10a λ=0 动作一致 | 299/299
+  PASS T10b λ=0.1 可完整运行
+T11 死局 bestMove 返回 -1
+  PASS T11 v7.1-baseline 死局=-1 | mv=-1
+  PASS T11 v7.2-ttfix 死局=-1 | mv=-1
+  PASS T11 v7.2-risk 死局=-1 | mv=-1
+  PASS T11 v7.2-inc 死局=-1 | mv=-1
+  PASS T11 v7.2-phase 死局=-1 | mv=-1
+T12 nn 引擎 evaluate vs 朴素重实现
+  PASS T12 nn evaluate ≈ 朴素重实现 | 坏例=0/100000
+  PASS T12b nn 种子可复现 | score=31972
+T13/T14/T15 概率引擎（全展开+cprob 剪枝）
+  PASS T13 prob evaluate 与 ttfix 逐位一致 | 不一致=0/100000
+  PASS T14 搜索确定性（不同种子同动作） | 200/200
+  PASS T15a 同种子逐局可复现 | score=79088
+  PASS T15b diag 字段完整 | {"stepAt12":1896,"stepAt13":-1,"stepAt14":-1,"empAt12":7,"empAt13":-1,"step2nd13":-1,"deathExp":12,"deathEmp":0,"deathBigPair":0}
+  PASS T15c cprobThresh=0 可运行 | score=79088
+  PASS T15d deepOnMaxExp=13 可运行 | score=79128
+T16 dual 评价 vs 朴素重算
+  PASS T16 dual 评价 ≈ 朴素重算 | 坏例=0/100000（触发 dual 路径 30957 局）
+  PASS T16b dual 同种子可复现 | score=12504 maxExp=10
+T17 after13nn 分段评价
+  PASS T17a maxExp<13 与 ttfix 逐位一致 | 不一致=0/100000
+  PASS T17b maxExp≥13 与 nn 评价一致(相对差≤1e-12) | 不一致=0（触发 30505 局）
+  PASS T17c 同种子可复现 | score=70884 maxExp=12
+T18-T24 TD 网络与融合引擎
+  PASS T19 save→load 权重一致
+  PASS T18 V_td 确定性（1000 次）
+  PASS T20a tdWeight=0 融合≡手工 | 不一致=0/50000
+  PASS T20b tdBlendFrom=12 低位逐位一致 | 不一致=0/50000（高位盘 26859 跳过）
+  PASS T23 混合生效（高位盘值改变） | 改变 10623/10623
+  PASS T24 无 NaN/Inf | 异常=0/100000
+  PASS T21 带 TD 种子复现 | score=2892
+  PASS T22 带 TD 搜索确定性 | 150/150
+T25 6x8 TDNet save/load 往返与确定性
+  PASS T25a 6x8 save/load 一致
+  PASS T25b 6x8 value 确定性/与 valueByIdx 一致 | v=2.217e+1
+  PASS T25c 6x8 视图索引范围合法
+
+===== 差分测试汇总: 45 PASS / 0 FAIL =====

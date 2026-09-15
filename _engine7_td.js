@@ -1,5 +1,9 @@
 /*
- * 2048 引擎 v7.3prob —— 全展开 + 概率阈值剪枝 + 终盘加深 + 里程碑诊断
+ * 2048 引擎 v7.4td —— prob 引擎 + N-Tuple/TD 价值函数加性融合（第Ⅲ轮研究）
+ * 叶子评估变为 evaluateFused = V_hand + tdWeight·K·(V_td − mean)。
+ * tdWeight=0 时与 v7.3prob 逐位等价（差分 T20 验证）。权重由 _td_net.js 提供。
+ *
+ * —— 以下为 v7.3prob 原始说明 ——
  * ==========================================================================
  * 在 v7.2-inc（平坦精确键 TT + 折叠表）基础上的三项研究升级：
  *
@@ -23,7 +27,7 @@
  */
 'use strict';
 
-const ENGINE_TAG = 'v7.3-prob';
+const ENGINE_TAG = 'v7.4-td';
 
 const POW2 = new Float64Array(40);
 for (let i = 0; i < 40; i++) POW2[i] = Math.pow(2, i);
@@ -97,7 +101,13 @@ let P = {
   // g_lane  = 指数∈[主块-2, 主块-1] 方块的蛇形位次贴合分（次链沿蛇形、不挡主链）
   // 项 = wChain2 * (g_align + 0.3*g_lane)；默认 0 = 关闭
   wChain2: 0,
-  wChain2From: 12
+  wChain2From: 12,
+  // N-Tuple/TD 融合参数
+  tdWeight: 0,       // 总开关（0 = 纯手工 ≡ v7.3prob；1 = 用校准 K）
+  tdBlendFrom: 0,    // 仅 maxExp ≥ 该值时加 TD 项（0 = 全程混合）
+  tdNetPath: '',      // 权重文件路径（eval2 的 params JSON 注入用）
+  tdRelWeight: 0.01,  // K = tdRelWeight × std(V_hand兄弟)/std(V_td兄弟)
+  tdBlendUp: 12       // maxExp > 该值时不融合（TD 训练未覆盖的高位防外推垃圾）
 };
 
 const ROW_SNAKE_BY_R = [];
@@ -380,10 +390,98 @@ function countEmpty(lo, hi) {
   return n;
 }
 
+// ---------- N-Tuple/TD 加性融合（_td_net.js 权重） ----------
+let TD_NET = null;
+let maxExpQuickBuf = null;
+function maxExpQuick(lo, hi) {
+  // 轻量 16 nibble 扫描
+  let m = 0, r;
+  r = lo & 0xFFFF;      { let v=(r>>>12)&0xF; if(v>m)m=v; v=(r>>>8)&0xF; if(v>m)m=v; v=(r>>>4)&0xF; if(v>m)m=v; v=r&0xF; if(v>m)m=v; }
+  r = (lo>>>16)&0xFFFF; { let v=(r>>>12)&0xF; if(v>m)m=v; v=(r>>>8)&0xF; if(v>m)m=v; v=(r>>>4)&0xF; if(v>m)m=v; v=r&0xF; if(v>m)m=v; }
+  r = hi & 0xFFFF;      { let v=(r>>>12)&0xF; if(v>m)m=v; v=(r>>>8)&0xF; if(v>m)m=v; v=(r>>>4)&0xF; if(v>m)m=v; v=r&0xF; if(v>m)m=v; }
+  r = (hi>>>16)&0xFFFF; { let v=(r>>>12)&0xF; if(v>m)m=v; v=(r>>>8)&0xF; if(v>m)m=v; v=(r>>>4)&0xF; if(v>m)m=v; v=r&0xF; if(v>m)m=v; }
+  return m;
+}
+function evaluateFused(lo, hi) {
+  const h = evaluate(lo, hi);
+  if (!TD_NET || P.tdWeight <= 0) return h;
+  if (P.tdBlendFrom > 0 && maxExpQuick(lo, hi) < P.tdBlendFrom) return h;
+  if (P.tdBlendUp > 0 && maxExpQuick(lo, hi) > P.tdBlendUp) return h;   // 训练未覆盖的高位不用 TD（防外推垃圾）
+  return TD_NET.fused(lo, hi, h);
+}
+function setTdNet(net) {
+  TD_NET = net;
+  if (TD_NET && !(TD_NET.K > 0)) {
+    // 兄弟校准（决策粒度）：随机盘校准的 K 曾偏大导致搜索崩溃（tdscout03）
+    TD_NET.tdRelWeight = P.tdRelWeight || 0.01;
+    TD_NET.calibrateSibling(randomSiblingGroups, evaluate, 3000);
+  }
+}
+// 校准用随机兄弟组提供器：随机盘 → 合法动作的 afterstate 兄弟
+function randomSiblingGroups(cb) {
+  let s = 20260915 >>> 0;
+  const rnd = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  for (let i = 0; i < 3000; i++) {
+    let lo = 0, hi = 0;
+    for (let c = 0; c < 16; c++) {
+      const e = rnd() < 0.42 ? 0 : 1 + Math.floor(Math.pow(rnd(), 2.0) * 13);
+      const sh = 4 * (c % 8);
+      if (c < 8) lo = (lo | (e << sh)) >>> 0; else hi = (hi | (e << sh)) >>> 0;
+    }
+    // 兄弟组
+    const loArr = [], hiArr = [];
+    for (let a = 0; a < 4; a++) {
+      const m = moveBoardCal(lo >>> 0, hi >>> 0, a);
+      if (m.moved) { loArr.push(m.lo); hiArr.push(m.hi); }
+    }
+    if (loArr.length >= 2) cb(loArr, hiArr);
+  }
+}
+
+// 轻量 moveBoard（兄弟生成用；与引擎主 LUT 独立）
+const CAL_MOVE = new Uint16Array(65536), CAL_RIGHT = new Uint16Array(65536);
+(function buildCalLuts() {
+  function slide(row) {
+    const c0=(row>>12)&0xF,c1=(row>>8)&0xF,c2=(row>>4)&0xF,c3=row&0xF;
+    const t=[]; if(c0)t.push(c0); if(c1)t.push(c1); if(c2)t.push(c2); if(c3)t.push(c3);
+    const out=[];
+    for(let i=0;i<t.length;i++){ if(i+1<t.length&&t[i]===t[i+1]){out.push(t[i]+1);i++;} else out.push(t[i]); }
+    while(out.length<4)out.push(0);
+    return (out[0]<<12)|(out[1]<<8)|(out[2]<<4)|out[3];
+  }
+  const rv = r => ((r&0xF)<<12)|((r&0xF0)<<4)|((r&0xF00)>>4)|((r&0xF000)>>12);
+  for(let r=0;r<65536;r++)CAL_MOVE[r]=slide(r);
+  for(let r=0;r<65536;r++)CAL_RIGHT[r]=rv(CAL_MOVE[rv(r)]);
+})();
+function moveBoardCal(lo, hi, dir) {
+  let nlo = 0, nhi = 0, moved = false;
+  if (dir === 0 || dir === 1) {
+    for (let r = 0; r < 4; r++) {
+      const row = r < 2 ? (lo >>> (16 * r)) & 0xFFFF : (hi >>> (16 * (r - 2))) & 0xFFFF;
+      const nrow = dir === 0 ? CAL_MOVE[row] : CAL_RIGHT[row];
+      if (nrow !== row) moved = true;
+      if (r < 2) nlo |= nrow << (16 * r); else nhi |= nrow << (16 * (r - 2));
+    }
+  } else {
+    for (let c = 0; c < 4; c++) {
+      const sh = 12 - 4 * c;
+      const col = (((lo >>> sh) & 0xF) << 12) | (((lo >>> (16 + sh)) & 0xF) << 8)
+                | (((hi >>> sh) & 0xF) << 4)  | ((hi >>> (16 + sh)) & 0xF);
+      const ncol = dir === 2 ? CAL_MOVE[col] : CAL_RIGHT[col];
+      if (ncol !== col) moved = true;
+      nlo |= ((ncol >>> 12) & 0xF) << sh;
+      nlo |= ((ncol >>> 8) & 0xF) << (16 + sh);
+      nhi |= ((ncol >>> 4) & 0xF) << sh;
+      nhi |= (ncol & 0xF) << (16 + sh);
+    }
+  }
+  return { lo: nlo >>> 0, hi: nhi >>> 0, moved };
+}
+
 // 全展开 + 概率阈值剪枝的随机节点；cprob = 到达本节点的累计概率
 function exitimax(lo, hi, depth, player, limit, cprob) {
-  if (depth === 0) return evaluate(lo, hi);
-  if (++NODE_COUNT > NODE_BUDGET) return evaluate(lo, hi);
+  if (depth === 0) return evaluateFused(lo, hi);
+  if (++NODE_COUNT > NODE_BUDGET) return evaluateFused(lo, hi);
   const tag = (depth << 1) | player;
   let idx = (Math.imul(lo, 0x9E3779B1) ^ Math.imul(hi, 0x85EBCA77) ^ Math.imul(tag, 0xC2B2AE3D)) >>> 0 & TT_MASK;
   for (let p = 0; p < TT_PROBE; p++) {
@@ -422,10 +520,10 @@ function exitimax(lo, hi, depth, player, limit, cprob) {
         if (rr < 2) { l2 = (lo | (1 << sh)) >>> 0; l4 = (lo | (2 << sh)) >>> 0; }
         else { h2 = (hi | (1 << sh)) >>> 0; h4 = (hi | (2 << sh)) >>> 0; }
         // 2 方块（90%）
-        if (cut2) sum += p2 * evaluate(l2, h2);
+        if (cut2) sum += p2 * evaluateFused(l2, h2);
         else sum += p2 * exitimax(l2, h2, depth - 1, true, limit, cp2);
         // 4 方块（10%）
-        if (cut4) sum += p4 * evaluate(l4, h4);
+        if (cut4) sum += p4 * evaluateFused(l4, h4);
         else sum += p4 * exitimax(l4, h4, depth - 1, true, limit, cp4);
       }
       result = sum;   // 概率加权，无需再除
@@ -547,4 +645,4 @@ function playGame(depth, limit, budget, seed) {
   return { score, steps, maxExp, diag };
 }
 
-module.exports = { playGame, setParams, getParams: () => P, evaluate, readCells, CELLS, bestMove, moveDir, setBoard: (l,h)=>{B_LO=l>>>0;B_HI=h>>>0;}, getBoard: ()=>({lo:B_LO,hi:B_HI}), countEmpty, getGain: () => G, setSeed, clearSeed, ENGINE_TAG };
+module.exports = { playGame, setParams, getParams: () => P, evaluate, evaluateFused, setTdNet, getTdNet: () => TD_NET, readCells, CELLS, bestMove, moveDir, setBoard: (l,h)=>{B_LO=l>>>0;B_HI=h>>>0;}, getBoard: ()=>({lo:B_LO,hi:B_HI}), countEmpty, getGain: () => G, setSeed, clearSeed, ENGINE_TAG };

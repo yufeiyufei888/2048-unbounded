@@ -50,6 +50,11 @@ const JOBS = {
     ['dual30deep', '_engine7_prob.js', 30, 4, 6, 6, 200000, { dualBase: 3.0, deepOnMaxExp: 13 }, SEED_B],
     ['dual22deep', '_engine7_prob.js', 30, 4, 6, 6, 200000, { dualBase: 2.2, deepOnMaxExp: 13 }, SEED_B],
     ['dual30', '_engine7_prob.js', 30, 4, 6, 6, 200000, { dualBase: 3.0 }, SEED_B]
+  ],
+  Q: [
+    ['chain30k', '_engine7_prob.js', 30, 4, 6, 6, 200000, { deepOnMaxExp: 13, wChain2: 30000 }, SEED_B],
+    ['chain60k', '_engine7_prob.js', 30, 4, 6, 6, 200000, { deepOnMaxExp: 13, wChain2: 60000 }, SEED_B],
+    ['probd7', '_engine7_prob.js', 30, 2, 7, 6, 200000, null, SEED_B]
   ]
 };
 

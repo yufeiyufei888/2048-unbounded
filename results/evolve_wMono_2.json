@@ -1,0 +1,47 @@
+{
+ "tag": "evolve_wMono_2",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "wMono": 2
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 83400.6,
+ "median": 80208,
+ "p90": 132508,
+ "best": 169160,
+ "worst": 16160,
+ "top5": [
+  169160,
+  167644,
+  165164,
+  157140,
+  153300
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9916666666666667,
+  "4096": 0.8166666666666667,
+  "8192": 0.2833333333333333,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3721,
+ "medianSteps": 3716,
+ "elapsedSec": 673.4,
+ "gamesPerMin": 10.7,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T15:19:31.301Z"
+}

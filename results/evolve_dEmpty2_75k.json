@@ -1,0 +1,47 @@
+{
+ "tag": "evolve_dEmpty2_75k",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "dEmpty2": 75000
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 88804,
+ "median": 80508,
+ "p90": 133300,
+ "best": 173288,
+ "worst": 28128,
+ "top5": [
+  173288,
+  169160,
+  168528,
+  168268,
+  168036
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.8583333333333333,
+  "8192": 0.31666666666666665,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3932,
+ "medianSteps": 3735,
+ "elapsedSec": 734.6,
+ "gamesPerMin": 9.8,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T16:36:12.494Z"
+}

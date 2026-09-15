@@ -1,0 +1,33 @@
+{
+ "batch": "Q",
+ "jobs": [
+  {
+   "tag": "chain30k",
+   "engine": "_engine7_prob.js",
+   "params": {
+    "deepOnMaxExp": 13,
+    "wChain2": 30000
+   },
+   "seedBase": 1001,
+   "sec": 1706.529
+  },
+  {
+   "tag": "chain60k",
+   "engine": "_engine7_prob.js",
+   "params": {
+    "deepOnMaxExp": 13,
+    "wChain2": 60000
+   },
+   "seedBase": 1001,
+   "sec": 1524.032
+  },
+  {
+   "tag": "probd7",
+   "engine": "_engine7_prob.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 937.181
+  }
+ ],
+ "finished": "2026-09-15T08:57:59.931Z"
+}

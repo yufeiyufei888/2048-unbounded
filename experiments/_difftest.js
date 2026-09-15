@@ -520,5 +520,131 @@ console.log('T17 after13nn 分段评价');
   PROBE.setParams({ after13nn: 0 });
 }
 
+// ================= T18-T24 N-Tuple/TD 集成差分 =================
+console.log('T18-T24 TD 网络与融合引擎');
+{
+  const fs = require('fs');
+  const { TDNet } = require(path.join(ROOT, '_td_net.js'));
+  const TDE = require(path.join(ROOT, '_engine7_td.js'));
+
+  // 生成确定性伪随机测试权重
+  const testNet = new TDNet();
+  {
+    let s = 314159 >>> 0;
+    const rnd = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    for (let i = 0; i < testNet.WT.length; i++) testNet.WT[i] = (rnd() - 0.5) * 2e5;
+  }
+  testNet.K = 3.5e6; testNet.mean = -1.2e4;
+  const binPath = path.join(__dirname, '_tdnet_difftest.bin');
+  testNet.save(binPath, false);
+  const loaded = TDNet.load(binPath);
+  let byteOk = true;
+  for (let i = 0; i < testNet.WT.length; i++) if (testNet.WT[i] !== loaded.WT[i]) { byteOk = false; break; }
+  check('T19 save→load 权重一致', byteOk && loaded.K === testNet.K && loaded.mean === testNet.mean);
+  fs.unlinkSync(binPath);
+
+  // T18 V_td 确定性
+  let det = true;
+  const v0 = loaded.value(0x12345678, 0x9abcdef);
+  for (let i = 0; i < 1000; i++) if (loaded.value(0x12345678, 0x9abcdef) !== v0) { det = false; break; }
+  check('T18 V_td 确定性（1000 次）', det);
+
+  // 挂载到引擎
+  TDE.setParams({ tdWeight: 1, tdBlendFrom: 0 });
+  TDE.setTdNet(loaded);
+
+  // T20 边界：tdWeight=0 时与 prob.evaluate 逐位一致
+  TDE.setParams({ tdWeight: 0 });
+  let mm0 = 0;
+  for (let i = 0; i < 50000; i++) {
+    const [lo, hi] = randBoardRealistic();
+    if (TDE.evaluateFused(lo, hi) !== TTFIX.evaluate(lo, hi)) mm0++;
+  }
+  check('T20a tdWeight=0 融合≡手工', mm0 === 0, `不一致=${mm0}/50000`);
+  // T20b tdBlendFrom=12 且 maxExp<12 时一致
+  TDE.setParams({ tdWeight: 1, tdBlendFrom: 12 });
+  let mmB = 0, hitB = 0;
+  for (let i = 0; i < 50000; i++) {
+    const [lo, hi] = randBoardRealistic();
+    const cells = loHiToCells(lo, hi);
+    let mx = 0; for (let k = 0; k < 16; k++) if (cells[k] > mx) mx = cells[k];
+    if (mx < 12) {
+      if (TDE.evaluateFused(lo, hi) !== TTFIX.evaluate(lo, hi)) mmB++;
+    } else hitB++;
+  }
+  check('T20b tdBlendFrom=12 低位逐位一致', mmB === 0, `不一致=${mmB}/50000（高位盘 ${hitB} 跳过）`);
+  // T23 混合切换确实生效（高位盘 fused ≠ 手工；显式关掉 tdBlendUp 上限）
+  TDE.setParams({ tdWeight: 1, tdBlendFrom: 0, tdBlendUp: 0 });
+  let changed = 0, hitHigh = 0;
+  for (let i = 0; i < 20000; i++) {
+    const [lo, hi] = randBoardRealistic();
+    const cells = loHiToCells(lo, hi);
+    let mx = 0; for (let k = 0; k < 16; k++) if (cells[k] > mx) mx = cells[k];
+    if (mx >= 12) {
+      hitHigh++;
+      if (TDE.evaluateFused(lo, hi) !== TTFIX.evaluate(lo, hi)) changed++;
+    }
+  }
+  check('T23 混合生效（高位盘值改变）', changed > hitHigh * 0.95, `改变 ${changed}/${hitHigh}`);
+  // T24 NaN/Inf 守卫
+  let nan = 0;
+  for (let i = 0; i < 100000; i++) {
+    const [lo, hi] = randBoardRealistic();
+    const v = TDE.evaluateFused(lo, hi);
+    if (!Number.isFinite(v)) nan++;
+  }
+  check('T24 无 NaN/Inf', nan === 0, `异常=${nan}/100000`);
+  // T21 种子复现 + T22 搜索确定性（带 TD）
+  const g1 = TDE.playGame(4, 4, 5000, 4242);
+  const g2 = TDE.playGame(4, 4, 5000, 4242);
+  check('T21 带 TD 种子复现', g1.score === g2.score && g1.steps === g2.steps, `score=${g1.score}`);
+  let agree = 0, tested = 0;
+  for (let i = 0; i < 150; i++) {
+    const [lo, hi] = randBoardRealistic();
+    if (BASE.countEmpty(lo, hi) < 2) continue;
+    TDE.setSeed(1000 + i);
+    const m1 = TDE.bestMove(lo, hi, 3, 2, 10000000);
+    TDE.setSeed(99000 + i);
+    const m2 = TDE.bestMove(lo, hi, 3, 2, 10000000);
+    tested++;
+    if (m1 === m2) agree++;
+  }
+  check('T22 带 TD 搜索确定性', agree === tested, `${agree}/${tested}`);
+  // 恢复默认（后续测试不受影响）
+  TDE.setParams({ tdWeight: 0, tdBlendFrom: 0 });
+}
+
+// ================= T25 6x8 网络往返 =================
+console.log('T25 6x8 TDNet save/load 往返与确定性');
+{
+  const fs = require('fs');
+  const { TDNet } = require(path.join(ROOT, '_td_net.js'));
+  const net6 = new TDNet('6x8');
+  {
+    let s = 271828 >>> 0;
+    const rnd = () => { s = (s + 0x6D2B79F5) | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    for (let i = 0; i < net6.WT.length; i += 7) net6.WT[i] = (rnd() - 0.5) * 100;   // 抽样填充（536MB 全填太慢）
+  }
+  net6.K = 8.8e8; net6.mean = 5.5;
+  const p6 = path.join(__dirname, '_tdnet6_difftest.bin');
+  net6.save(p6, false);
+  const back = TDNet.load(p6);
+  let ok = back.tupleType === '6x8' && back.K === net6.K && back.mean === net6.mean;
+  let s2 = 271828 >>> 0;
+  const rnd2 = () => { s2 = (s2 + 0x6D2B79F5) | 0; let t = Math.imul(s2 ^ s2 >>> 15, 1 | s2); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ s2 >>> 14) >>> 0) / 4294967296; };
+  for (let i = 0; i < net6.WT.length; i += 7) { if (back.WT[i] !== net6.WT[i]) { ok = false; break; } rnd2(); }
+  check('T25a 6x8 save/load 一致', ok);
+  const vA = net6.value(0x13579bdf, 0x2468ace0);
+  const vB = net6.value(0x13579bdf, 0x2468ace0);
+  const idx6 = net6.views(0x13579bdf, 0x2468ace0);
+  const vC = net6.valueByIdx(idx6);
+  check('T25b 6x8 value 确定性/与 valueByIdx 一致', vA === vB && vA === vC, `v=${vA.toExponential(3)}`);
+  // views 6x8 索引范围 < 16^6
+  let inRange = true;
+  for (let v = 0; v < 8; v++) if (idx6[v] < 0 || idx6[v] >= 16777216) inRange = false;
+  check('T25c 6x8 视图索引范围合法', inRange);
+  fs.unlinkSync(p6);
+}
+
 console.log(`\n===== 差分测试汇总: ${pass} PASS / ${fail} FAIL =====`);
 process.exit(fail ? 1 : 0);

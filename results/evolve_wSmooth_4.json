@@ -1,0 +1,47 @@
+{
+ "tag": "evolve_wSmooth_4",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "wSmooth": 4
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 85166.4,
+ "median": 80452,
+ "p90": 132512,
+ "best": 169160,
+ "worst": 28128,
+ "top5": [
+  169160,
+  167644,
+  165164,
+  164452,
+  157140
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.8333333333333334,
+  "8192": 0.2916666666666667,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3793,
+ "medianSteps": 3730,
+ "elapsedSec": 666,
+ "gamesPerMin": 10.8,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T15:41:53.875Z"
+}

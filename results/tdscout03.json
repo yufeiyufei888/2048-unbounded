@@ -1,0 +1,49 @@
+{
+ "tag": "tdscout03",
+ "engine": "_engine7_td.js",
+ "engineTag": null,
+ "n": 30,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "tdWeight": 1,
+  "tdRelWeight": 0.03,
+  "tdNetPath": "td_scout.bin"
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1030
+ ],
+ "avg": 10350.3,
+ "median": 9716,
+ "p90": 15488,
+ "best": 17728,
+ "worst": 3232,
+ "top5": [
+  17728,
+  16724,
+  16200,
+  15488,
+  14608
+ ],
+ "maxTile": 1024,
+ "medianMaxTile": 512,
+ "targetRates": {
+  "2048": 0,
+  "4096": 0,
+  "8192": 0,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.7333,
+ "avgSteps": 646,
+ "medianSteps": 666,
+ "elapsedSec": 13.6,
+ "gamesPerMin": 132.4,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T10:09:14.714Z"
+}

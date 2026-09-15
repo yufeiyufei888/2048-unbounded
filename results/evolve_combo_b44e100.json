@@ -1,0 +1,48 @@
+{
+ "tag": "evolve_combo_b44e100",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "base": 4.4,
+  "wEmpty": 100000
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 80130.1,
+ "median": 79036,
+ "p90": 133152,
+ "best": 168224,
+ "worst": 7568,
+ "top5": [
+  168224,
+  167652,
+  164356,
+  157132,
+  157112
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9583333333333334,
+  "4096": 0.7916666666666666,
+  "8192": 0.25,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0167,
+ "avgSteps": 3590,
+ "medianSteps": 3654,
+ "elapsedSec": 630.1,
+ "gamesPerMin": 11.4,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-15T17:49:10.262Z"
+}
