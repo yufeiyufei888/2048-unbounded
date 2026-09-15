@@ -1,0 +1,48 @@
+{
+ "tag": "risk005",
+ "engine": "_engine7_risk.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "riskLambda": 0.05,
+  "riskMode": 1,
+  "riskPhase": 12
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 44169,
+ "median": 45924,
+ "p90": 48488,
+ "best": 51212,
+ "worst": 6764,
+ "top5": [
+  51212,
+  50948,
+  50820,
+  50648,
+  50568
+ ],
+ "maxTile": 4096,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.975,
+  "4096": 0.8166666666666667,
+  "8192": 0,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.025,
+ "avgSteps": 2003,
+ "medianSteps": 2028,
+ "elapsedSec": 31.4,
+ "gamesPerMin": 229.6,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:09:25.474Z"
+}

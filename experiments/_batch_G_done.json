@@ -1,0 +1,35 @@
+{
+ "batch": "G",
+ "jobs": [
+  {
+   "tag": "dual30deep",
+   "engine": "_engine7_prob.js",
+   "params": {
+    "dualBase": 3,
+    "deepOnMaxExp": 13
+   },
+   "seedBase": 1001,
+   "sec": 1160.405
+  },
+  {
+   "tag": "dual22deep",
+   "engine": "_engine7_prob.js",
+   "params": {
+    "dualBase": 2.2,
+    "deepOnMaxExp": 13
+   },
+   "seedBase": 1001,
+   "sec": 1144.405
+  },
+  {
+   "tag": "dual30",
+   "engine": "_engine7_prob.js",
+   "params": {
+    "dualBase": 3
+   },
+   "seedBase": 1001,
+   "sec": 640.991
+  }
+ ],
+ "finished": "2026-09-14T23:13:30.148Z"
+}

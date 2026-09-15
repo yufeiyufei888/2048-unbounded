@@ -1,0 +1,40 @@
+{
+ "tag": "smoke",
+ "engine": "_engine7_baseline.js",
+ "engineTag": null,
+ "n": 4,
+ "depth": 3,
+ "limit": 4,
+ "budget": 2000,
+ "params": 1001,
+ "seedBase": null,
+ "seedRange": null,
+ "avg": 23841,
+ "median": 16508,
+ "p90": 36380,
+ "best": 36380,
+ "worst": 14364,
+ "top5": [
+  36380,
+  28112,
+  16508,
+  14364
+ ],
+ "maxTile": 2048,
+ "medianMaxTile": 2048,
+ "targetRates": {
+  "2048": 0.5,
+  "4096": 0,
+  "8192": 0,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 1297,
+ "medianSteps": 1486,
+ "elapsedSec": 0.4,
+ "gamesPerMin": 674.2,
+ "procs": 2,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:03:29.297Z"
+}

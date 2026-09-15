@@ -1,0 +1,21 @@
+# --- 工作区 / 会话私有文件（不入库） ---
+.workbuddy/
+.workbuddy-ai/
+node_modules/
+
+# --- 临时与生成文件 ---
+_prof/
+_prof2/
+_shots/
+reports/
+experiments/nodeinfo.txt
+experiments/_dbg_nn.js
+experiments/_ew2_*.js
+_worker.js
+_ew_*.js
+*.cpuprofile
+*.log
+
+# --- 系统文件 ---
+Thumbs.db
+.DS_Store

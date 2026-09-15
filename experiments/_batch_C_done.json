@@ -1,0 +1,23 @@
+{
+ "batch": "C",
+ "jobs": [
+  {
+   "tag": "inc240",
+   "engine": "_engine7_incremental.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 106.17
+  },
+  {
+   "tag": "inc_bench",
+   "engine": "_engine7_incremental.js",
+   "params": {
+    "useMoveOrder": 0,
+    "useEvalMemo": 0
+   },
+   "seedBase": 1001,
+   "sec": 25.258
+  }
+ ],
+ "finished": "2026-09-14T21:14:35.578Z"
+}

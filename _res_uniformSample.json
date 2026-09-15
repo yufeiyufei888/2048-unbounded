@@ -1,0 +1,21 @@
+{
+ "tag": "uniformSample",
+ "engine": "_engine7.js",
+ "n": 96,
+ "avg": 33261.375,
+ "median": 33256,
+ "best": 122508,
+ "top5": [
+  122508,
+  80212,
+  79944,
+  76660,
+  71676
+ ],
+ "maxTile": 8192,
+ "earlyRate": 0.20833333333333334,
+ "elapsedSec": 56.632,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000
+}

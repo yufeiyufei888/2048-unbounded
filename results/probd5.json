@@ -1,0 +1,44 @@
+{
+ "tag": "probd5",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 240,
+ "depth": 5,
+ "limit": 6,
+ "budget": 200000,
+ "params": "(引擎默认)",
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1240
+ ],
+ "avg": 71839.7,
+ "median": 74848,
+ "p90": 129208,
+ "best": 168448,
+ "worst": 7500,
+ "top5": [
+  168448,
+  168408,
+  166660,
+  155764,
+  155660
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.975,
+  "4096": 0.7625,
+  "8192": 0.15,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0083,
+ "avgSteps": 3267,
+ "medianSteps": 3383,
+ "elapsedSec": 94.9,
+ "gamesPerMin": 151.8,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:55:44.029Z"
+}

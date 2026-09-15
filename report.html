@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2048 AI 策略进化报告 · 无上限合成</title>
+<style>
+  :root{
+    --bg:#faf8ef; --ink:#3a322b; --ink2:#7c6f64; --line:#e6ded3;
+    --gold:#edc22e; --orange:#f2b179; --red:#f67c5f; --brown:#8f7a66; --cream:#eee4da;
+    --green:#5aa469; --blue:#5b8ff9; --purple:#8a6fd1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:15px/1.7 'Helvetica Neue',Arial,'PingFang SC','Microsoft YaHei',sans-serif;
+    padding:36px 18px 70px;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  header{text-align:center;margin-bottom:38px}
+  h1{font-size:34px;letter-spacing:-.5px;margin-bottom:8px}
+  h1 .hl{background:linear-gradient(transparent 62%,var(--gold) 62%);padding:0 4px}
+  .sub{color:var(--ink2);font-size:14px}
+  .badge{display:inline-block;margin-top:14px;background:#fff;border:1px solid var(--line);
+    border-radius:999px;padding:6px 16px;font-size:13px;color:var(--ink2);
+    box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  h2{font-size:20px;margin:38px 0 6px;display:flex;align-items:center;gap:9px}
+  h2::before{content:'';width:4px;height:20px;border-radius:2px;background:var(--brown)}
+  .lead{color:var(--ink2);font-size:13.5px;margin-bottom:16px}
+  .hero{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:22px 0 6px;
+  }
+  .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 16px;
+    box-shadow:0 3px 16px rgba(0,0,0,.045);text-align:center}
+  .card .n{font-size:27px;font-weight:800;letter-spacing:-1px;line-height:1.15}
+  .card .n.g{color:var(--green)} .card .n.b{color:var(--blue)}
+  .card .n.o{color:var(--orange)} .card .n.p{color:var(--purple)}
+  .card .l{font-size:12.5px;color:var(--ink2);margin-top:5px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;font-size:13.5px;box-shadow:0 3px 16px rgba(0,0,0,.045)}
+  th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line)}
+  th{background:#f6f1e9;font-weight:700;font-size:12.5px;color:var(--ink2);letter-spacing:.3px}
+  tr:last-child td{border-bottom:0}
+  td.num{font-variant-numeric:tabular-nums;font-weight:600}
+  .win{background:#f2fbf4}
+  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700}
+  .pill.g{background:#e3f4e7;color:#2f7d45}
+  .pill.b{background:#e6efff;color:#2f5db5}
+  .pill.o{background:#fdeee1;color:#b5661f}
+  .pill.r{background:#fde8e4;color:#b83c22}
+  .bar-wrap{display:flex;align-items:center;gap:10px}
+  .bar{height:11px;border-radius:6px;background:var(--brown);min-width:3px}
+  .note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--gold);
+    border-radius:10px;padding:15px 17px;margin-top:16px;font-size:13.5px;color:var(--ink)}
+  .note b{color:var(--ink)}
+  .note .t{font-weight:800;margin-bottom:5px;font-size:14px}
+  ul{margin:8px 0 0 18px} li{margin:4px 0}
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;width:190px}
+  .tb{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:12.5px;background:var(--cream);color:var(--ink)}
+  .tb.e{background:#cdc1b4}
+  .tb.s3{background:#f2b179;color:#fff}.tb.s4{background:#f59563;color:#fff}
+  .tb.s5{background:#f67c5f;color:#fff}.tb.s6{background:#f65e3b;color:#fff}
+  .tb.s7{background:#edcf72;color:#fff}.tb.s8{background:#edcc61;color:#fff}
+  .tb.s9{background:#edc850;color:#fff}.tb.s10{background:#edc53f;color:#fff}
+  .tb.s11{background:#edc22e;color:#fff}.tb.s12{background:#3c3a32;color:#fff;font-size:11px}
+  .tb.s13{background:#2c2a24;color:var(--gold);font-size:11px}
+  .flex2{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  footer{text-align:center;color:var(--ink2);font-size:12.5px;margin-top:46px}
+  code{background:#f3ece2;padding:2px 6px;border-radius:5px;font-size:12.5px;
+    font-family:Consolas,Monaco,monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>2048 AI <span class="hl">策略进化报告</span></h1>
+  <div class="sub">无上限合成 · 极速模拟 · 最高分纪录</div>
+  <div class="badge">4×4 · 2048→4096→8192→… 不设上限 · 单文件可玩 + 后台批量模拟</div>
+</header>
+
+<div class="hero">
+  <div class="card"><div class="n g">177,184</div><div class="l">最高分纪录（v7.2 depth6 / 240 局）</div></div>
+  <div class="card"><div class="n b">32.1%</div><div class="l">8192 达成率（depth6，翻倍）</div></div>
+  <div class="card"><div class="n o">84,225</div><div class="l">depth6 平均分（+15.8% vs depth5）</div></div>
+  <div class="card"><div class="n p">150 局/分</div><div class="l">depth5 吞吐（比旧基线 +69%）</div></div>
+</div>
+
+<h2>一、游戏本体：无上限合成</h2>
+<div class="lead">
+  合并逻辑是 <code>value * 2</code>，本身<strong>没有任何上限</strong>——2048 之后继续合 4096、8192、16384……
+  超过 2048 的方块走深色样式，保证数字依然清晰可读。
+</div>
+<div class="flex2">
+  <div>
+    <div class="board" id="b2048"></div>
+    <div style="font-size:12px;color:var(--ink2);margin-top:7px">4096 局面示例</div>
+  </div>
+  <div>
+    <div class="board" id="b8192"></div>
+    <div style="font-size:12px;color:var(--ink2);margin-top:7px">蛇形单调结构示意（8192 级别局面）</div>
+  </div>
+</div>
+
+<h2>二、四代引擎的进化</h2>
+<div class="lead">从「能玩」到「能冲 8192」，关键不在手速，而在<strong>评估函数是否真的能区分好坏局面</strong>。</div>
+<table>
+  <thead>
+    <tr><th>引擎</th><th>核心策略</th><th>平均分</th><th>均分提升</th><th>最高分</th><th>最大块</th><th>速率</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><b>v2</b> BitBoard</td>
+      <td>位压缩 + 行查表 + 转置表</td>
+      <td class="num">~15,000</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:66px"></div><span style="font-size:12px;color:var(--ink2)">基准</span></div></td>
+      <td class="num">80,176</td>
+      <td><span class="pill o">4096</span></td>
+      <td>9.4 局/分</td>
+    </tr>
+    <tr class="win">
+      <td><b>v3</b> 蛇形权重</td>
+      <td>Z 字蛇形权重 + 危险惩罚 + 自适应深度</td>
+      <td class="num">34,477</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:150px;background:var(--green)"></div><span style="font-size:12px;color:#2f7d45;font-weight:700">+130%</span></div></td>
+      <td class="num">123,808</td>
+      <td><span class="pill g">8192</span></td>
+      <td>5.4 局/分</td>
+    </tr>
+    <tr>
+      <td><b>v6</b> 排序式评估</td>
+      <td>奖励「沿蛇形路径指数单调不增」+ 全参数自动调参</td>
+      <td class="num">17,636</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:70px;background:var(--blue)"></div><span style="font-size:12px;color:#2f5db5;font-weight:700">+18%</span></div></td>
+      <td class="num">36,328</td>
+      <td><span class="pill b">2048</span></td>
+      <td>9.1 局/分</td>
+    </tr>
+    <tr class="win">
+      <td><b>v7</b> 混合体</td>
+      <td>v3 的指数蛇形权重 + v6 的无分配极速内核（全局 lo/hi + 行级查表）</td>
+      <td class="num">34,561</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:150px;background:var(--purple)"></div><span style="font-size:12px;color:#5a45a0;font-weight:700">+126%</span></div></td>
+      <td class="num">144,216</td>
+      <td><span class="pill g">8192</span></td>
+      <td>14 局/分</td>
+    </tr>
+    <tr class="win">
+      <td><b>v7.1</b> base=4.5</td>
+      <td>v7 + 更强蛇形底数（多进程复测）</td>
+      <td class="num">79,514</td>
+      <td><div class="bar-wrap"><div class="bar" style="width:190px;background:var(--green)"></div><span style="font-size:12px;color:#2f7d45;font-weight:700">新基线</span></div></td>
+      <td class="num">176,564</td>
+      <td><span class="pill g">8192</span></td>
+      <td>40 局/分</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note">
+  <div class="t">📊 三方长跑对决（真实批量模拟，非小样本估算）</div>
+  <table style="margin-top:10px;box-shadow:none">
+    <thead><tr><th>引擎</th><th>局数</th><th>均分</th><th>最高分</th><th>最大块</th><th>吞吐</th></tr></thead>
+    <tbody>
+      <tr class="win"><td><b>v7</b> 混合体</td><td class="num">960</td><td class="num">33,635</td><td class="num">144,216</td><td><span class="pill g">8192</span></td><td>14 局/分</td></tr>
+      <tr><td>v3 蛇形权重</td><td class="num">215</td><td class="num">34,678</td><td class="num">123,808</td><td><span class="pill g">8192</span></td><td>2 局/分</td></tr>
+      <tr><td>v6 排序式评估</td><td class="num">600</td><td class="num">17,636</td><td class="num">36,328</td><td><span class="pill b">2048</span></td><td>9.1 局/分</td></tr>
+      <tr><td>v7 depth 6</td><td class="num">48</td><td class="num">30,141</td><td class="num">66,868</td><td><span class="pill o">4096</span></td><td>≈77 局/分</td></tr>
+    </tbody>
+  </table>
+  <br>
+  <b>结论</b>：指数蛇形权重（v3 策略）是真正决定棋力的那一步 —— v6 改掉它以后，即使调参和速度都优化了，
+  棋力仍只有一半。v7 把 v3 的策略接到极速内核上，<b>均分打平 v3、最高分反超 16%，速度快 7 倍</b>。
+  <br><br>
+  v7 的 960 局细分：<b>223 局破 5 万 · 13 局破 8 万 · 5 局破 10 万</b>。
+</div>
+
+<div class="note">
+  <div class="t">⚠️ 这一版最大的技术发现：评估函数「退化」</div>
+  早期引擎用 <code>数值 × 位置指数权重</code>（如 <code>2^e × 4^(15-k)</code>）打分，
+  动态范围高达 <b>4¹⁵ ≈ 10⁹</b>。实测一个左上角的 256 就贡献了全部得分的 <b>75%</b>；
+  而「某一行两个小块该左靠还是右靠」的差异只占总分的 <b>1.3×10⁻⁴</b>。
+  搜索对这种量级的差异几乎不敏感 → 除了死保那个大块，其它决策近似随机 → 盘面结构必然崩坏。
+  <br><br>
+  早期小样本曾得到「底数越大越差」的误判，但新的多进程复测修正了这个结论：在当前 BitBoard、LUT、limit=6、depth=5 配置下，<code>base=4.5</code> 的 96 局结果为均分 <b>79,514</b>、最高 <b>176,564</b>，明显优于 base=4.0 的同期基线；base=4.25 与 4.75 则分别回落到约 63,881 与 66,562。<br><br>
+  因此当前 v7.1 采用 <code>base=4.5</code>，但结论仍需更大样本复核，且尚未证明能稳定突破 16384。<b>v6 换成「排序式评估」</b>——奖励方块沿蛇形路径单调递减，每格贡献都是 O(1) 量级，
+  结构信息不再被单个大块淹没。单局步数从 ~400 步升到 ~950 步，并打出 2048。
+</div>
+
+<h2>三、自动调参（把「猜权重」换成「量权重」）</h2>
+<div class="lead">v6 的评估函数有 9 个可调参数。用坐标下降法、以「N 局平均分」为适应度自动搜索最优组合。</div>
+<table>
+  <thead><tr><th>参数</th><th>初值</th><th>调优后</th><th>作用</th></tr></thead>
+  <tbody>
+    <tr><td><code>wDisorder</code></td><td class="num">260</td><td class="num" style="color:var(--green)">700</td><td>蛇形违序惩罚——越大越死守结构</td></tr>
+    <tr><td><code>wMono</code></td><td class="num">40</td><td class="num" style="color:var(--green)">10</td><td>全局单调性权重（调低，避免与蛇形项打架）</td></tr>
+    <tr><td><code>wSmooth</code></td><td class="num">60</td><td class="num" style="color:var(--green)">180</td><td>平滑度惩罚（相邻指数差）</td></tr>
+    <tr><td><code>dEmpty1</code></td><td class="num">90,000</td><td class="num" style="color:var(--green)">260,000</td><td>只剩 1 个空位的惩罚——<b>影响最大</b>，逼 AI 提前整合</td></tr>
+    <tr><td><code>wCorner</code></td><td class="num">900</td><td class="num" style="color:var(--green)">600</td><td>最大块脱离左上角的惩罚（原值过激）</td></tr>
+  </tbody>
+</table>
+<div class="note">
+  <div class="t">📈 调参带来的提升（12 局/配置，去噪声验证）</div>
+  <ul>
+    <li>基准参数：均分 <b>15,371</b>，最高 27,476</li>
+    <li>第一轮学到的参数：均分 <b>17,225</b>（+12%）</li>
+    <li>最终「激进」参数：均分 <b>22,424</b>（<b>+46%</b>），最高 <b>58,612 / 4096</b></li>
+  </ul>
+  <br>
+  另外一条重要教训：<b>每配置只跑 3~4 局，适应度噪声极大</b>——同一个参数组合两次测
+  能得到 18,519 和 16,475。所以最终结论必须用 12 局以上复测，否则调整的就是噪声。
+</div>
+
+<h2>四、速度与策略，双线并进</h2>
+<table>
+  <thead><tr><th>方向</th><th>手段</th><th>效果</th></tr></thead>
+  <tbody>
+    <tr><td><b>速度</b></td><td>64 位位压缩棋盘（lo/hi）+ 行移动查表（65536 项）+ 无分配热点路径 + 每局清空转置表</td><td>开局 <b>1,600 步/秒</b>；整局模拟从 10 分钟（走 DOM）降到 2~50 秒</td></tr>
+    <tr><td><b>速度</b></td><td>去掉整棵树上的对象分配，用全局 lo/hi + 显式保存/恢复</td><td>同算法吞吐 <b>9.4 → 29 局/分</b>（×3）</td></tr>
+    <tr><td><b>速度</b></td><td>多进程并行（24 进程 × 独立随机种子）</td><td>聚合吞吐 <b>≈ 200 局/分</b>（单进程 ~14 局/分）</td></tr>
+    <tr><td><b>策略</b></td><td>蛇形 Z 字权重（v3）</td><td>平均分 <b>+130%</b>，首次突破 <b>8192</b></td></tr>
+    <tr><td><b>策略</b></td><td>排序式评估 + 9 参数自动调参（v6）</td><td>平均分 <b>+46%</b>，结构显著更稳（局局上 2048）</td></tr>
+    <tr class="win"><td><b>策略</b></td><td>v7 = v3 策略 × v6 极速内核（指数蛇形权重 + 全局 lo/hi + 行级查表）</td><td>同策略下每步可达 <b>1,969 节点</b>，均分 <b>~33,000</b>，速度 <b>14 局/分</b>（v3 的 2.6×）</td></tr>
+  </tbody>
+</table>
+
+<h2>五、v7 追因记：一个把均分砍掉 8 倍的「共享缓冲」</h2>
+<div class="lead">
+  v7 的目标是把 v3 的强结构约束（指数蛇形权重）搬到 v6 的无分配极速内核上。但移植后
+  均分只有 <b>3,782</b>，且速度异常地快（<b>346 局/分</b>）。
+</div>
+<div class="note">
+  <div class="t">🔍 排查过程（每一步都排除了一个假设）</div>
+  <ul>
+    <li>验证转置表 key 算术 —— 当时判断「无碰撞」（<b>2026-09-15 交接复测证明该结论有误，见第八节</b>）。</li>
+    <li>禁用转置表重跑 —— 依然崩盘，<b>排除 TT</b>。</li>
+    <li>12 万次随机棋盘差分测试 <code>moveDir</code> 四个方向 —— <b>零错误</b>，排除移动逻辑。</li>
+    <li>2 万个随机局面比对 <code>evaluate</code> 与 v3 的逐格实现 —— <b>零差异</b>，排除评估函数。</li>
+    <li>统计搜索树：每步只访问 <b>1,030</b> 节点（v3 是 <b>2,325</b>），每步少一半。</li>
+  </ul>
+  <br>
+  <b>真正的根因</b>：为省内存，空位列表用了一个<b>全局复用缓冲</b> <code>EMPTY_IDX</code>。而
+  <code>exitimax</code> 的随机分支这样采样：
+  <br><br>
+  <code>for (i = 0; i &lt; n; i++) { const idx = EMPTY_IDX[rand * nEmp | 0]; … 递归 … }</code>
+  <br><br>
+  第 2 次迭代时，<b>上一轮递归已经把 <code>EMPTY_IDX</code> 覆盖成子节点的空位列表</b>了。
+  于是循环读到的索引里混进了「原本已经有方块的格子」，把新方块 <code>OR</code> 到脏格子上
+  —— <b>搜索用的棋盘从内部就被破坏了</b>，深层评估全乱，AI 于是乱走、250 步就满盘。
+  <br><br>
+  <b>修复</b>：进循环前先把空位快照到按深度索引的局部缓冲。一行改动，均分
+  <b>3,782 → 30,750（8×）</b>，每步节点 <b>1,030 → 1,969</b>。
+  <br><br>
+  教训：<b>用全局缓冲加速递归搜索时，任何「跨递归调用」的数据都必须先落快照</b>；
+  这类 bug 不会报错、不会崩，只会安静地把棋力砍掉一个数量级。
+</div>
+
+<h2>六、踩过的坑（都靠对照测试抓出来）</h2>
+<div class="note">
+  <div class="t">🔧 四个真实 bug</div>
+  <ul>
+    <li><b>右移全归零</b>：左移表与右移表写在同一个循环里，而右移要用到尚未填充的左移表项
+      → 所有右移结果变成 0。改成<b>两遍初始化</b>。由 <b>12 万次随机棋盘对照测试</b>抓出。</li>
+    <li><b>搜索树读到脏棋盘</b>：为省分配把棋盘放在全局变量上，但命中转置表时提前 return
+      却忘了恢复全局棋盘 → 调用方读到「上一个兄弟节点残留的棋盘」。
+      教训：用全局变量做棋盘时，<b>所有 return 路径都必须先恢复状态</b>。</li>
+    <li><b>计分恒为 0</b>：用「移动前后棋盘总和差」计分，但合并守恒（2+2=4 总和不变）
+      → 必须让滑动函数返回本次合并得分并累加。</li>
+    <li><b>全局空位缓冲被递归覆盖</b>（见第五节）：不报错、不崩，只让棋力悄悄掉 8 倍。
+      教训：递归搜索里，<b>跨递归复用的全局缓冲必须逐层快照</b>。</li>
+  </ul>
+</div>
+
+<h2>七、外部方案调研与可行性</h2>
+<div class="lead">以下资料用于指导 16384/32768 方向。本轮重点核查了 nneonneo/2048-ai 的实现细节并完成移植实验（见第十一节）。</div>
+<table>
+  <thead><tr><th>资料</th><th>核心算法</th><th>性能特点</th><th>与 v7.2 的差异 / 是否值得移植</th></tr></thead>
+  <tbody>
+    <tr><td><a href="https://github.com/nneonneo/2048-ai">nneonneo/2048-ai</a></td>
+      <td>C++ 单 uint64 位棋盘 + Expectimax + 行查表（含转置列处理）+ 概率阈值剪枝</td>
+      <td>单核 1,000 万局面/秒；调优权重后 <b>16384 达成率约 90%、32768 约 1/3</b></td>
+      <td>差异：①全展开+CPROB_THRESH=1e-4 概率剪枝（我们用均匀采样）②按 distinct tiles 自适应深度 ③rank 加权单调性（多项式量级，非指数蛇形）④CMA-ES 权重元优化。<b>已移植有界评价（棋力-9%，否决）；概率剪枝与自适应深度是下一步最优先方向。</b></td></tr>
+    <tr><td><a href="https://github.com/billzi2016/2048-expectimax-bitboard">2048-expectimax-bitboard</a></td>
+      <td>64-bit 棋盘 + LUT + 启发式 Expectimax</td>
+      <td>结构与 v7 最接近，无独立 16384 数据</td>
+      <td>与 v7.2 的 lo/hi + 移动表 + 蛇形评估同构，<b>无新增可移植点</b>，用于交叉验证实现思路</td></tr>
+    <tr><td><a href="https://github.com/darkKnight386/2048-ai-solver">2048-ai-solver</a></td>
+      <td>蛇形单调权重 + 转置表 + Expectimax</td>
+      <td>同族实现，参考价值在置换表策略</td>
+      <td>本轮已完成平坦数组精确键 TT（比其更严格），<b>置换表部分已超越，无需再移植</b></td></tr>
+    <tr><td><a href="https://github.com/mmiermans/solver2048">solver2048</a></td>
+      <td>BitBoard + 搜索优化 + 状态压缩</td>
+      <td>教学性质实现</td>
+      <td>状态压缩思路与现有 lo/hi + nibble 编码相同，<b>无新增收益</b></td></tr>
+    <tr><td><a href="https://github.com/ishandutta2007/2048-ai">WebAssembly 方向</a></td>
+      <td>浏览器端 WASM/Worker 并行</td>
+      <td>面向浏览器体验，非棋力</td>
+      <td>观战页保持主线程单步可解释；<b>仅当观战卡顿时再考虑</b>，优先级低</td></tr>
+    <tr><td><a href="https://arxiv.org/html/2510.20205v1">Merge and Conquer (arXiv 2510.20205)</a></td>
+      <td>代码化价值函数进化 + 精英保留 + rollback + MCTS</td>
+      <td>论文未证明 8192 以上目标</td>
+      <td>「多候选价值函数+精英保留」思路可用于评估函数搜索，但依赖大吞吐（本轮 +69% 吞吐后可行性提升）；<b>排在概率剪枝之后</b></td></tr>
+    <tr><td><a href="https://sidharths.com/assets/2048qlearning/2048paper.pdf">N-Tuple / TD Learning</a></td>
+      <td>N-Tuple 网络局部模式表 + TD(λ) 自我博弈</td>
+      <td>标准 2048 上可达 16384 级，需离线训练数小时+</td>
+      <td>训练成本高、与现有 LUT 体系正交；<b>长期方向，仍排在验证性实验之后</b></td></tr>
+  </tbody>
+</table>
+<div class="note">
+  <div class="t">关键警示（任务书要求）</div>
+  nneonneo 的 16384≈90% 是在<b>全展开 + 概率剪枝 + 更深搜索 + CMA-ES 调优权重</b>共同作用下取得的，
+  不能把成绩单独归因于任何一项。其有界评价移植实验（本轮）就证明了：<b>评价函数的「尺度形态」不是唯一决定因素，
+  搜索结构（概率剪枝）与权重协同才构成完整方案</b>。不要因某项目在标准 2048 上表现好，就直接假设它适合 16384+。
+</div>
+<div class="note">
+  <div class="t">当前可执行路线</div>
+  <p>v7.1 的 96 局复测：<b>16384 达成率 0%</b>、8192 达成率 21.9%、最高块中位数 4096、早崩率 3.1%。这说明分数和 8192 概率已明显提升，但距离 16384 仍是未解决的结构性问题。</p>
+  <ol>
+    <li>以 v7.1（<code>base=4.5</code>）作为强基线，主指标改为「16384 达成率、最高块中位数、早崩率」，不只看最高分。</li>
+    <li>保留默认关闭的 <code>wMobility</code>、<code>wMerge</code>、<code>wCorner</code>、<code>wDeadEnd</code> 实验项；阶段化版本已能保持 8192，但尚未提升到 16384。</li>
+    <li>下一步先做 chance-node 的风险敏感 Expectimax，再做多候选价值函数的 Top-N 精英和 rollback；MCTS、n-tuple/TD、WASM 放在验证基线之后。</li>
+  </ol>
+</div>
+
+<h2>八、v7.2 交接实验（2026-09-15 · 种子化复现框架）</h2>
+<div class="lead">
+  交接后在新工作空间完成：<b>源目录只读</b>，全部开发/实验/报告写入新工作空间。
+  建立了可复现实验框架（mulberry32 种子注入引擎，同参数同种子逐局可复现、跨引擎同种子配对比较），
+  并以 <b>240 局/配置</b> 的规模重测基线与全部实验分支。本轮共完成 <b>2,940 局</b> 真实模拟（A~E 五批次）。
+</div>
+
+<div class="note">
+  <div class="t">🧭 方法论升级：配对种子</div>
+  每局 seed = seedBase + 局序号，与进程布局无关。<b>两个引擎用同一段种子（1001..1240）各跑 240 局</b>，
+  逐局配对求差 → 平均差的标准误从「独立样本」的 ~7,000 降到 <b>~3,000</b>，且消除运气偏差。
+  配对工具：<code>experiments/_compare.js</code>。种子机制默认关闭时行为与旧引擎完全一致（RNG 调用序列不变）。
+</div>
+
+<h2>九、本轮最大发现：转置表键冲突（此前结论更正）</h2>
+<div class="lead">
+  旧报告第五节曾写「验证转置表 key 算术——无碰撞」。<b>该结论有误</b>。本轮用构造示例 + 20 万随机棋盘实证：
+</div>
+<div class="note">
+  <div class="t">🔍 键冲突的构造与实证（experiments/_tt_collision_probe.js）</div>
+  旧 key = <code>depthTerm×2³² + lo×65536 + hi</code>。<code>hi</code> 是完整 32 位（含 row2、row3）却按原值相加，
+  <code>lo×65536</code> 又会跨过 2³² 边界，因此不同棋盘可映射到同一 key：
+  <ul>
+    <li>构造示例：棋盘 A（仅 row3-col3 有 2，即 <code>lo=0, hi=0x10000</code>）与
+      棋盘 B（仅 row0-col3 有 2，即 <code>lo=1, hi=0</code>）→ <b>key 完全相同</b>（贡献都是 2¹⁶）。</li>
+    <li>20 万随机真实感棋盘 @depth3：32 次跨棋盘首键冲突（0.02%）。</li>
+    <li>影响：TT 偶发把 A 棋盘的搜索值错配给 B 棋盘，<b>静默污染搜索</b>（不报错、不崩）。</li>
+  </ul>
+  <br>
+  <b>修复（_engine7_ttfix.js）</b>：改用平坦类型数组 TT（nneonneo C++ 思路）——
+  <code>K_LO/K_HI</code> 两个 Uint32Array 精确存储 64 位键，<code>TAG = depth×2+player</code>，
+  开放寻址 + 线性探测（8 槽），每局 <code>TAG.fill(0)</code> 清表杜绝跨局污染，固定 ~33MB 内存。
+  <br><br>
+  <b>240 局配对验证</b>：棋力与 v7.1 统计持平（平均差 −46 ± 2,982，t=−0.02 不显著，胜率 51.2%），
+  但吞吐 <b>88.7 → 129 局/分（+45%）</b>——Map 换类型数组本身就是一大速度红利。
+  <b>结论：作为正确性修复采纳。</b>
+</div>
+
+<h2>十、实验矩阵总表（种子 1001..1240 · depth5 · limit6 · budget45k）</h2>
+<table>
+  <thead>
+    <tr><th>配置</th><th>局数</th><th>平均分</th><th>中位数</th><th>最高分</th><th>8192达成</th><th>16384达成</th><th>早崩率</th><th>中位块</th><th>吞吐</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><b>v7.1 基线</b>（_engine7_baseline）</td><td class="num">240</td><td class="num">72,787</td><td class="num">72,492</td><td class="num">168,308</td><td class="num">18.3%</td><td class="num">0%</td><td class="num">1.7%</td><td>4096</td><td>88.7局/分</td></tr>
+    <tr class="win"><td><b>v7.2-ttfix</b>（精确键 TT）</td><td class="num">240</td><td class="num">72,741</td><td class="num">76,504</td><td class="num">155,232</td><td class="num">15.0%</td><td class="num">0%</td><td class="num">1.7%</td><td>4096</td><td>129局/分</td></tr>
+    <tr class="win"><td><b>v7.2-inc 折叠表</b>（增量版，排序/memo 关）</td><td class="num">240</td><td class="num">72,741</td><td class="num">76,504</td><td class="num">155,232</td><td class="num">15.0%</td><td class="num">0%</td><td class="num">1.7%</td><td>4096</td><td><b>150.2局/分</b></td></tr>
+    <tr><td>v7.2-inc 排序+memo 开</td><td class="num">240</td><td class="num">54,169</td><td class="num">57,048</td><td class="num">148,308</td><td class="num">3.3%</td><td class="num">0%</td><td class="num">1.3%</td><td>4096</td><td>135.9局/分</td></tr>
+    <tr><td>v7.2-nn（nneonneo 有界评价）</td><td class="num">240</td><td class="num">66,142</td><td class="num">71,200</td><td class="num">174,408</td><td class="num">10.8%</td><td class="num">0%</td><td class="num">0.8%</td><td>4096</td><td>194.7局/分</td></tr>
+    <tr><td>v7.2-phase（阶段化评估）</td><td class="num">120</td><td class="num">70,653</td><td class="num">76,524</td><td class="num">147,444</td><td class="num">11.7%</td><td class="num">0%</td><td class="num">2.5%</td><td>4096</td><td>94.6局/分</td></tr>
+    <tr><td>risk λ=0.005</td><td class="num">120</td><td class="num">44,990</td><td class="num">46,888</td><td class="num">55,464</td><td class="num"><b>0%</b></td><td class="num">0%</td><td class="num">2.5%</td><td>4096</td><td>227局/分</td></tr>
+    <tr><td>risk λ=0.01</td><td class="num">120</td><td class="num">44,500</td><td class="num">46,084</td><td class="num">54,556</td><td class="num"><b>0%</b></td><td class="num">0%</td><td class="num">2.5%</td><td>4096</td><td>234局/分</td></tr>
+    <tr><td>risk λ=0.05</td><td class="num">120</td><td class="num">44,169</td><td class="num">45,924</td><td class="num">51,212</td><td class="num"><b>0%</b></td><td class="num">0%</td><td class="num">2.5%</td><td>4096</td><td>230局/分</td></tr>
+    <tr><td>risk λ=0.1 / 0.2</td><td class="num">120×2</td><td class="num">43,434 / 43,371</td><td class="num">—</td><td class="num">~50,000</td><td class="num"><b>0%</b></td><td class="num">0%</td><td class="num">2.5%</td><td>4096</td><td>~233局/分</td></tr>
+    <tr><td>采样：有放回（sampleMode=1）</td><td class="num">120</td><td class="num">34,319</td><td class="num">32,636</td><td class="num">79,708</td><td class="num">0%</td><td class="num">0%</td><td class="num"><b>17.5%</b></td><td>2048</td><td>361局/分</td></tr>
+    <tr><td>采样：位置加权（sampleMode=2）</td><td class="num">120</td><td class="num">56,352</td><td class="num">58,656</td><td class="num">154,728</td><td class="num">5.8%</td><td class="num">0%</td><td class="num">2.5%</td><td>4096</td><td>378局/分</td></tr>
+  </tbody>
+</table>
+<div class="note">
+  <div class="t">📐 240 局配对差分（ttfix vs v7.1 基线，同种子逐局配对）</div>
+  平均差 <b>−46 ± 2,982（SE）</b>，95% CI [−5,890, +5,799]，t = −0.02（p≥0.05），胜率 51.2% →
+  <b>棋力统计持平</b>。8192 达成率 18.3% vs 15.0% 的差异在 240 局下未达显著（约 ±5 个百分点的抽样波动）。
+</div>
+<div class="note">
+  <div class="t">✅ bit-exact 声明的终极验证</div>
+  「增量折叠表」分支关闭排序/memo 后，与 ttfix 在 <b>240 局配对种子下所有统计逐位一致</b>
+  （均分 72,741.2、中位 76,504、最高 155,232、top5 完全相同）——差分测试（evaluate 20 万局面对比 + 40 万次 moveDir 全方向对照）+ 全局对局复现双重确认无误。
+</div>
+
+<h2>十一、四组实验的结论与解释</h2>
+<div class="note">
+  <div class="t">❌ 任务4 风险敏感 Expectimax：结构性失败（如实报告）</div>
+  实现：<code>value = mean − λ·risk</code>，risk 为随机节点的<b>下行半偏差</b> Σmax(0, mean−vᵢ)/n（含特征风险模式备选），
+  λ 扫了 <b>0.005 / 0.01 / 0.05 / 0.1 / 0.2 共 5 个点（两个数量级）</b>，仅当 maxExp≥4096 启用以保护前期。
+  <br><br>
+  结果：全部配置 8192 达成率 <b>15% → 0%</b>，均分稳定掉到 44k 左右，且对 λ 几乎不敏感——
+  这不是调参问题，而是<b>结构性冲突</b>：2048 从 4096→8192→16384 的每次升级都必须经历
+  「大块并排、蛇形临时破坏」的高波动过渡期。下行风险惩罚让 AI 系统性地回避这些押注局面，
+  稳定在 4096 后反复横跳（其 4096 达成率 81.7% 反而略高于基线）。<b>结论：风险规避与「不押注就无法升级」的游戏结构直接冲突，不建议再沿此方向调参。</b>
+  负面结果同样有价值：它证明基线的高方差不是缺陷，而是高阶突破的必要代价。
+</div>
+<div class="note">
+  <div class="t">✅ 任务5 随机节点采样：现有分层抽样就是最优</div>
+  <ul>
+    <li><b>无重复分层抽样（基线）</b>：均分 72,741 / 8192 率 15.0%。</li>
+    <li><b>有放回均匀抽样</b>：均分 34,319（−53%），早崩率 17.5%（×10）——重复分支浪费预算、坏运气覆盖不足，明确更差。</li>
+    <li><b>按蛇形位置加权抽样</b>：均分 56,352（−23%），8192 率 5.8%——对蛇头区域的偏置估计扭曲了期望值，也更差。</li>
+  </ul>
+  结论：保留 sampleMode=0。三种模式都已在引擎中实现并可通过参数复现。
+</div>
+<div class="note">
+  <div class="t">✅ 任务6 增量评价与动作排序：折叠表采纳，排序+memo 否决</div>
+  <ul>
+    <li><b>行/列单调性 MAX 折叠表</b>（ROW_MONO_MAX/COL_MONO_MAX）：求和顺序与原实现完全一致 →
+      <b>bit-exact</b>，单进程评估省 8 次查表，整局吞吐 <b>129 → 150.2 局/分（+16.5%）</b>，零棋力代价。<b>采纳为新默认。</b></li>
+    <li><b>动作排序</b>（按子局面空位数优先探索）：max 节点理论上与顺序无关，但预算截断下的探索顺序变化导致
+      棋力大跌（8192 率 15.0% → 3.3%）。「空位多优先」与蛇形策略「先填头部」的偏好冲突。<b>否决（保留为参数实验）。</b></li>
+    <li><b>叶子评估 memo</b>：与排序组合测试时无增益（叶子棋盘在兄弟 chance 分支间重复率低）。<b>否决（保留为参数实验）。</b></li>
+    <li>真正的提速空间在别处：TT 平坦化（+45%）与折叠表（+16.5%）合计让吞吐比旧基线提高 <b>69%</b>。</li>
+  </ul>
+</div>
+<div class="note">
+  <div class="t">🔬 外部研究移植：nneonneo 有界评价（假设检验）</div>
+  假设：v7 指数蛇形权重主项达 ~10¹⁵ 量级，单个大方块主导评估 → 高阶阶段过度保守 → 16384 卡死。
+  移植 nneonneo 的有界评价（空位^1.5×270 + 合并×700 − rank^3.5×11 − rank⁴单调性×47，全部多项式量级）→ <code>_engine7_nn.js</code>。
+  <br><br>
+  结果：240 局均分 66,142（−9%）、8192 率 10.8%、16384 仍 0%、吞吐 194.7 局/分（最快）。
+  <b>假设未证实</b>：有界评价没有解锁 16384，棋力反而略降——指数蛇形在当前预算搜索下仍是更强的结构约束。
+  但 nn 版速度优势明显，可作为「快速海量模拟」的模式保留。nneonneo 的其它两项技术
+  （<b>概率阈值剪枝 CPROB_THRESH=1e-4</b>、<b>按 distinct tiles 自适应深度</b>）尚未移植，是下一步最有希望的提速/棋力方向。
+</div>
+
+<h2>十二、depth 才是真正的棋力杠杆（E 批次 + 元发现）</h2>
+<div class="lead">用提速后的新基线（150 局/分）以 240 局规模复测 depth=6 / budget=65000 / limit=8（源项目此前分别只有 8/24/24 局小样本）。</div>
+<table>
+  <thead><tr><th>配置（240 局，种子 1001..1240）</th><th>平均分</th><th>中位数</th><th>最高分</th><th>8192达成</th><th>16384</th><th>早崩率</th><th>吞吐</th></tr></thead>
+  <tbody>
+    <tr><td>depth=5（=上文 v7.2-inc）</td><td class="num">72,741</td><td class="num">76,504</td><td class="num">155,232</td><td class="num">15.0%</td><td class="num">0%</td><td class="num">1.7%</td><td>150.2局/分</td></tr>
+    <tr class="win"><td><b>depth=6</b></td><td class="num"><b>84,225</b></td><td class="num">76,744</td><td class="num"><b>177,184</b></td><td class="num"><b>32.1%</b></td><td class="num">0%</td><td class="num"><b>0.4%</b></td><td>19.7局/分</td></tr>
+    <tr><td>budget=65,000</td><td class="num">72,741</td><td class="num">76,504</td><td class="num">155,232</td><td class="num">15.0%</td><td class="num">0%</td><td class="num">1.7%</td><td>152.5局/分</td></tr>
+    <tr><td>limit=8</td><td class="num">72,741</td><td class="num">76,504</td><td class="num">155,232</td><td class="num">15.0%</td><td class="num">0%</td><td class="num">1.7%</td><td>152.3局/分</td></tr>
+  </tbody>
+</table>
+<div class="note">
+  <div class="t">💡 元发现：limit 与 budget 参数在当前引擎中从不生效（配对种子逐位一致证明）</div>
+  budget=65000 与 limit=8 的 240 局结果与基准<b>逐位完全相同</b>（均分/中位/最高/top5 全同）。原因：
+  <ul>
+    <li><b>limit</b>：playGame 的自适应深度下，chance 节点只出现在 depth=4/2/0（此时 cap=max(limit,10)=10，与 limit=6/8 无关）
+      或空位≤3 的 depth=5（此时 nEmp≤3 全采样，cap 无效）→ <b>limit∈(≤10) 从不改变采样数</b>；</li>
+    <li><b>budget</b>：每步实际节点数从未达到 45,000，提高预算无任何影响。</li>
+  </ul>
+  因此源项目「limit=8 无优势（24 局）」「budget=65000 无优势（24 局）」两组对照实验实际测的是<b>同一配置</b>，
+  当时的分数差异纯属无种子下的抽样噪声。这两组结论现已更正。<b>depth 是唯一有效棋力杠杆。</b>
+</div>
+<div class="note">
+  <div class="t">📈 depth=6：迄今最强配置（8192 达成率翻倍）</div>
+  240 局大样本：均分 <b>84,225（+15.8%）</b>、8192 达成率 <b>32.1%（15.0% → 翻倍）</b>、早崩率 <b>0.4%</b>、
+  最高 177,184（超过旧纪录 176,564）、top5 全部超过 173,000。源项目「depth=6 无稳定优势」基于 8 局样本，现予更正。
+  <b>16384 仍为 0%</b>——但 8192 站稳率的翻倍意味着冲 16384 的机会窗口显著变大；代价是吞吐 150 → 19.7 局/分（×7.6），
+  本轮提速（+69%）正是让 depth=6 从「不可行」变为「可行」的前提。
+  <br><br>
+  <b>推荐策略</b>：棋力/冲高方块场景用 <code>depth=6</code>；海量统计/快速迭代场景用 <code>depth=5</code>。
+</div>
+
+<h2>十三、16384 现状：如实报告</h2>
+<div class="note">
+  <div class="t">🎯 尚未实现 16384（达成率 0%，非偶发、未宣称突破）</div>
+  本轮 2,940 局（A/B/C/D/E 五个批次）中<b>没有任何一局达到 16384</b>。8192 达成率 15%（depth5）～32.1%（depth6），
+  8192→16384 的最后一跳是当前明确的瓶颈。分数侧：基线 240 局均分 72,787 / 中位 72,492 / 最高 168,308，
+  与源项目 96 局的 79,514 同量级（96 局样本略偏乐观）；depth=6 下均分 84,225 / 最高 177,184。
+  <br><br>
+  <b>下一步建议（按优先级）</b>：
+  <ol>
+    <li><b>depth=6 大样本冲击</b>：8192 站稳率已翻倍，用 480+ 局 depth=6 配对样本给 16384 更多统计机会，同时记录 8192+8192 并存局面的失败模式（对齐失败 vs 被迫破坏蛇形）。</li>
+    <li><b>概率阈值剪枝</b>（nneonneo 方案）：全展开 + 累计概率 &lt; 1e-4 剪枝，替代均匀采样——搜索质量的下一个免费提升，也是 d7/d8 可行化的前提。</li>
+    <li><b>limit/budget 参数体系修复</b>：让 cap 与 budget 真正可达（例如 cap 按 depth 递减、budget 按 ms 计时），恢复这两个旋钮的意义。</li>
+    <li>MCTS / N-Tuple / TD Learning 仍排在这些验证之后。</li>
+  </ol>
+</div>
+<div class="note">
+  <div class="t">📌 当前推荐默认参数（v7.2-inc）</div>
+  <code>_engine7_incremental.js</code>（useMoveOrder=0, useEvalMemo=0），评价参数与 v7.1 完全一致：
+  <code>{base: 4.5, wEmpty: 60000, wMono: 3.0, wSmooth: 6.0, dEmpty1: 400000, dEmpty2: 60000}</code>。
+  <b>冲棋力/高阶方块</b>：<code>depth=6, limit=6, budget=45000</code>（8192 率 32.1%，19.7 局/分）；
+  <b>海量统计/快速迭代</b>：<code>depth=5, limit=6, budget=45000</code>（8192 率 15.0%，150 局/分）。
+  空位≤3 时自动 +1 深度。limit/budget 在当前结构下不生效（见第十二节元发现），保留只为兼容。
+  复现命令：<code>node experiments/_eval2.js _engine7_incremental.js 30 8 5 6 45000 repro 1001</code>
+  （seed 1001..1120，与 results/ 中 JSON 逐局可对照）。
+</div>
+
+<h2>十四、深度研究Ⅱ：16384 瓶颈的精确定位与对症实验（2026-09-15 续）</h2>
+<div class="lead">在 v7.2 结论基础上实施报告确定的下一步：nneonneo 式概率阈值剪枝移植、终盘加深、以及带里程碑诊断的 8192→16384 失败模式分析（新增 1,320 局，差分测试扩至 31 项全 PASS）。</div>
+
+<div class="note">
+  <div class="t">🔬 移植实验：全展开 + 概率阈值剪枝（_engine7_prob.js）</div>
+  实现 nneonneo 方案：随机节点<b>展开全部空位 × {2(0.9), 4(0.1)}</b>，沿树传递累计概率 cprob，
+  cprob×分支概率 &lt; 1e-4 时改用静态评估（搜索完全去随机化——同棋盘不同种子给出同一动作，T14 验证 200/200）。
+  <table style="margin-top:10px;box-shadow:none">
+    <thead><tr><th>配置（配对种子）</th><th>局数</th><th>均分</th><th>最高</th><th>8192达成</th><th>16384</th><th>早崩</th><th>吞吐</th></tr></thead>
+    <tbody>
+      <tr><td>全展开 d5（vs 采样 d5: 72,741）</td><td class="num">240</td><td class="num">71,840</td><td class="num">168,448</td><td class="num">15.0%</td><td class="num">0%</td><td class="num">0.8%</td><td>151.8局/分</td></tr>
+      <tr><td>全展开 d6（vs 采样 d6: 84,225 / 32.1%）</td><td class="num">240</td><td class="num">80,271</td><td class="num">173,416</td><td class="num">25.0%</td><td class="num">0%</td><td class="num">0.4%</td><td>21.8局/分</td></tr>
+      <tr><td>全展开 d6+终盘d7（8192 后深度+1）</td><td class="num">120</td><td class="num">85,406</td><td class="num">169,160</td><td class="num">30.0%</td><td class="num">0%</td><td class="num"><b>0.0%</b></td><td>12局/分</td></tr>
+    </tbody>
+  </table>
+  <br>
+  配对结论：<b>d5 持平</b>（剪枝省的算力≈全展开的开销）；<b>d6 反而略弱</b>（−3,954±3,762，t=−1.05 不显著但方向一致——
+  在我们的评价/预算结构下，均匀采样 10/14 已足够，全展开的额外分支摊薄了有效深度）；
+  <b>终盘加深显著改善稳定性</b>（2048 达成率 100%、早崩 0%、均分 85,406 为迄今最高，+3,693±5,266 vs 采样 d6 不显著但胜率 56.7%）。
+  <b>结论：概率阈值剪枝在本项目的 depth≤7 区间不是免费午餐，采纳「终盘加深」、保留全展开为 depth≥8 的使能技术。</b>
+</div>
+
+<div class="note">
+  <div class="t">🎯 本轮最重要发现：8192→16384 失败模式的精确画像（96 局到达 8192 的游戏）</div>
+  通过引擎内置里程碑诊断（首次达成步数/达成时空位/第二个 8192/死局结构），所有到达 8192 的游戏呈现<b>完全一致</b>的失败模式：
+  <ul>
+    <li><b>0% 曾造出第二个 8192</b>（60/60 与 36/36）——不是运气差，是结构性不可能；</li>
+    <li><b>100% 死于最高 8192</b>，无一局死时棋面有 16384；</li>
+    <li><b>死局 0% 存在 exp≥12 的相邻同值对</b>——到死都没把两个大方块并排过；</li>
+    <li>首个 8192 后中位存活 <b>~1,700-1,900 步</b>（不是猝死，是漫长的「原地踏步」后满盘）；</li>
+    <li>死亡时中位空位 0（正常耗尽，非早崩）。</li>
+  </ul>
+  <br>
+  <b>根因（尺度分析）</b>：合并出第一个 8192 后，再造第二个 8192 需要在剩余 15 格重爬一条 4096 链。
+  但评价函数中 8192 主项 ≈ 2¹³×4.5¹⁵ ≈ 2.8×10¹⁴，而第二链 4096 项仅 ≈ 2¹²×4.5¹¹ ≈ 6×10¹⁰——
+  <b>只有主项的 0.02%</b>。指数蛇形评价在结构上「看不见」第二链的发育，AI 的一切决策都被 8192 的保护项支配，
+  第二链永远排在次要地位直到满盘。<b>这不是搜索深度问题（d7 终盘加深已验证），而是评价尺度问题。</b>
+</div>
+
+<div class="note">
+  <div class="t">🧪 对症实验Ⅰ：dualBase 双尺度评价 —— 假说排除（有价值的负面结果）</div>
+  当棋盘 maxExp ≥ 13（8192 出现）时，蛇形主项切换为<b>低底数行表（dualBase）+ 最大块原尺度补偿</b>，
+  其余方块相对权重放大约 (base/dualBase)^k 倍（dualBase=3.0 时第二链 4096 的相对权重从主项的 0.02% → 约 4%）。
+  <table style="margin-top:10px;box-shadow:none">
+    <thead><tr><th>配置（120 局，与 probd6deep 同种子配对）</th><th>均分</th><th>8192达成</th><th>16384</th><th>早崩</th></tr></thead>
+    <tbody>
+      <tr><td>probd6deep（对照，无 dual）</td><td class="num">85,406</td><td class="num">30.0%</td><td class="num">0%</td><td class="num">0.0%</td></tr>
+      <tr><td>dualBase=3.0 + 终盘d7</td><td class="num">84,503</td><td class="num">30.0%</td><td class="num">0%</td><td class="num">0.0%</td></tr>
+      <tr><td>dualBase=2.2 + 终盘d7</td><td class="num">82,884</td><td class="num">30.0%</td><td class="num">0%</td><td class="num">0.0%</td></tr>
+      <tr><td>dualBase=3.0（无终盘加深）</td><td class="num">84,662</td><td class="num">30.0%</td><td class="num">0%</td><td class="num">0.0%</td></tr>
+    </tbody>
+  </table>
+  <br>
+  <b>诊断确认：dual 配置下 8192 局的「第二个 8192 出现率」依然是 0%</b>——即使第二链在评价中已可见，
+  也造不出来。<b>「评价可见性」假说被排除。</b>真因更深：<b>8192 出现之前的评价（与 v7.1 逐位一致）
+  已把局面锁死为单链蛇形布局</b>——8192 合并完成的瞬间，剩余 15 格的结构（4096/2048 的位置、空位分布）
+  已经不支持第二条链的爬升，此后无论评价怎么改，积重难返。
+</div>
+<div class="note">
+  <div class="t">🧪 对症实验Ⅱ：after13nn 分段评价切换 —— 有害（8192 率减半）</div>
+  实现：8192 前保持指数蛇形；maxExp≥13 的局面（含搜索树内的假想叶子）整体切换为 nneonneo 式评价
+  （merges×700 直接激励 4096+4096 相邻合并）。差分 T17 验证切换语义正确（<13 与 ttfix 逐位一致、≥13 与 nn 评价一致）。
+  <br><br>
+  结果（nnsegdeep，d6+终盘d7，120 局配对）：均分 82,904（−3%），<b>8192 达成率 30.0% → 15.8%（减半）</b>，16384 仍 0%。
+  有趣的是 top5 反而高度聚集（175,484/175,428/175,336/174,788/173,404）——nn 尾段让强局更均质，但冲 8192 的成功率大跌。
+  原因：切换发生在搜索树内部，8192 合并<b>之前</b>的关键决策（是否押注合并）已经看到 nn 风格的后续评估，
+  保守的空位/合并权衡替代了蛇形的结构承诺。
+  <b>结论：分段切换有害，否决。</b>
+</div>
+
+<div class="note">
+  <div class="t">📌 深度研究Ⅱ总结：16384 的结构性结论（3,900+ 局证据链）</div>
+  本轮 1,200 局（F/G/H 批次）在 2,940 局基础上完成了一条完整的证据链：
+  <ol>
+    <li><b>诊断</b>：到达 8192 的 96 局 100% 死于「第二链无法形成」——第二个 8192 出现率 0%、大方块相邻率 0%、
+      首个 8192 后平均存活 ~1,800 步仍原地踏步。</li>
+    <li><b>假说 1（评价可见性）</b>：dualBase 双尺度重整让第二链权重提升 2000 倍 → 第二个 8192 出现率仍 0% → <b>排除</b>。</li>
+    <li><b>假说 2（评价哲学）</b>：after13nn 分段切换到 merges 主导的 nn 评价 → 8192 率减半 → <b>有害，排除</b>。</li>
+    <li><b>假说 3（搜索深度）</b>：终盘 d7 加深 → 稳定性显著改善（均分 +3.7%、2048 率 100%、早崩 0%）但 16384 仍 0% →
+      <b>深度不是瓶颈</b>。</li>
+  </ol>
+  <br>
+  <b>结论：在「指数蛇形评价族 + depth≤7」框架内，16384 结构性不可达</b>——8192 合并完成时的单链蛇形布局
+  在物理上已经排除第二条 4096 链的爬升空间，任何事后（post-8192）干预都无法挽回。
+  打破僵局需要<b>在 4096→8192 合并之前就为双链布局</b>，这本质上是一个价值函数学习问题
+  （N-Tuple/TD 从自我博弈中学习「什么样的 4096 局面能通向 16384」），而非手工权重的进一步调参。
+  这与 nneonneo 依赖 CMA-ES 大规模权重优化的经验一致。
+  <br>
+  <b>本轮实际采纳</b>：① 终盘加深 <code>deepOnMaxExp=13</code>（已移植进 <code>_engine7_incremental.js</code>）；
+  ② 全展开+cprob 剪枝保留为 depth≥8 的使能技术（<code>_engine7_prob.js</code>）；
+  ③ 诊断基础设施（diag 里程碑追踪 + _analyze_diag.js）为后续所有实验提供失败模式分析能力。
+</div>
+
+<div class="note">
+  <div class="t">⚠️ 移植验证发现：终盘加深必须与预算配套（incd6deep，120 局配对）</div>
+  把 deepOnMaxExp 移植回增量引擎后用 budget=45000 验证：<b>均分 −4,279 ± 1,582（t=−2.71 显著更差，胜率 9.2%）</b>。
+  原因：8192 后的 d7 搜索节点数超过 45k 预算 → 截断 → 静态评估代替深算，反而不如不加深。
+  对照组 probd6deep（同加深、budget=200k 无截断）+3,693 略优。
+  <b>规则：deepOnMaxExp=13 必须搭配 budget ≥ 200,000；引擎已加注释。</b>
+</div>
+
+<div class="note">
+  <div class="t">📌 最终推荐配置（深度研究Ⅱ后更新）</div>
+  <table style="margin-top:8px;box-shadow:none">
+    <thead><tr><th>场景</th><th>引擎与参数</th><th>实测（配对种子）</th></tr></thead>
+    <tbody>
+      <tr class="win"><td><b>冲棋力/纪录</b></td><td><code>_engine7_prob.js</code> + <code>{deepOnMaxExp:13}</code>，depth=6, budget=<b>200000</b></td><td>均分 85,406 · 8192 率 30.0% · 4096 率 83.3% · 早崩 0.0% · 12局/分</td></tr>
+      <tr><td>海量统计/快速迭代</td><td><code>_engine7_incremental.js</code>，depth=5, budget=45000</td><td>均分 72,741 · 8192 率 15.0% · 早崩 1.7% · 150局/分</td></tr>
+      <tr><td>均衡</td><td><code>_engine7_incremental.js</code>，depth=6, budget=45000</td><td>均分 84,225 · 8192 率 32.1%（240 局最高）· 19.7局/分</td></tr>
+    </tbody>
+  </table>
+  评价参数三者一致：<code>{base:4.5, wEmpty:60000, wMono:3.0, wSmooth:6.0, dEmpty1:400000, dEmpty2:60000}</code>。
+  复现：<code>node experiments/_eval2.js &lt;引擎&gt; 30 8 &lt;depth&gt; 6 &lt;budget&gt; &lt;tag&gt; null 1001</code>。
+</div>
+
+<footer>
+  2048 AI 策略进化报告 · 数据来自真实批量模拟（非估算）<br>
+  交付物：<code>2048.html</code>（可玩） · <code>2048-play.html</code>（AI 实时观战） · <code>experiments/</code>（复现框架与差分测试） · <code>results/</code>（全部实验 JSON）
+</footer>
+
+</div>
+<script>
+// 渲染两个示例棋盘
+function render(id, grid){
+  var el=document.getElementById(id);
+  var S={0:'e',2:'',4:'',8:'s3',16:'s4',32:'s5',64:'s6',128:'s7',256:'s8',512:'s9',1024:'s10',2048:'s11',4096:'s12',8192:'s13'};
+  el.innerHTML='';
+  for(var r=0;r<4;r++)for(var c=0;c<4;c++){
+    var v=grid[r][c];
+    var d=document.createElement('div');
+    d.className='tb '+(S[v]!==undefined?S[v]:'s13');
+    d.textContent=v||'';
+    el.appendChild(d);
+  }
+}
+render('b2048', [[4096,2048,1024,512],[16,64,128,256],[8,16,32,16],[2,8,4,2]]);
+render('b8192', [[8192,512,2048,2],[16,2,256,4],[8,128,32,2],[2,64,2,4]]);
+</script>
+</body>
+</html>

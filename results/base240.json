@@ -1,0 +1,44 @@
+{
+ "tag": "base240",
+ "engine": "_engine7_baseline.js",
+ "engineTag": null,
+ "n": 240,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": "(引擎默认)",
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1240
+ ],
+ "avg": 72786.8,
+ "median": 72492,
+ "p90": 129196,
+ "best": 168308,
+ "worst": 3128,
+ "top5": [
+  168308,
+  166604,
+  157568,
+  157224,
+  157160
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9666666666666667,
+  "4096": 0.7791666666666667,
+  "8192": 0.18333333333333332,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0167,
+ "avgSteps": 3288,
+ "medianSteps": 3350,
+ "elapsedSec": 162.3,
+ "gamesPerMin": 88.7,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:07:01.534Z"
+}

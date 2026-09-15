@@ -1,0 +1,45 @@
+{
+ "batch": "D",
+ "jobs": [
+  {
+   "tag": "nn240",
+   "engine": "_engine7_nn.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 74.202
+  },
+  {
+   "tag": "risk0005",
+   "engine": "_engine7_risk.js",
+   "params": {
+    "riskLambda": 0.005,
+    "riskMode": 1,
+    "riskPhase": 12
+   },
+   "seedBase": 1001,
+   "sec": 31.965
+  },
+  {
+   "tag": "risk001",
+   "engine": "_engine7_risk.js",
+   "params": {
+    "riskLambda": 0.01,
+    "riskMode": 1,
+    "riskPhase": 12
+   },
+   "seedBase": 1001,
+   "sec": 31.074
+  },
+  {
+   "tag": "incfold240",
+   "engine": "_engine7_incremental.js",
+   "params": {
+    "useMoveOrder": 0,
+    "useEvalMemo": 0
+   },
+   "seedBase": 1001,
+   "sec": 96.198
+  }
+ ],
+ "finished": "2026-09-14T21:20:40.504Z"
+}

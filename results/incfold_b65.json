@@ -1,0 +1,47 @@
+{
+ "tag": "incfold_b65",
+ "engine": "_engine7_incremental.js",
+ "engineTag": null,
+ "n": 240,
+ "depth": 5,
+ "limit": 6,
+ "budget": 65000,
+ "params": {
+  "useMoveOrder": 0,
+  "useEvalMemo": 0
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1240
+ ],
+ "avg": 72741.2,
+ "median": 76504,
+ "p90": 124312,
+ "best": 155232,
+ "worst": 5724,
+ "top5": [
+  155232,
+  154788,
+  153324,
+  151860,
+  148336
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9708333333333333,
+  "4096": 0.7958333333333333,
+  "8192": 0.15,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0167,
+ "avgSteps": 3307,
+ "medianSteps": 3506,
+ "elapsedSec": 94.4,
+ "gamesPerMin": 152.5,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:36:10.197Z"
+}

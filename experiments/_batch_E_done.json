@@ -1,0 +1,36 @@
+{
+ "batch": "E",
+ "jobs": [
+  {
+   "tag": "incfold_d6",
+   "engine": "_engine7_incremental.js",
+   "params": {
+    "useMoveOrder": 0,
+    "useEvalMemo": 0
+   },
+   "seedBase": 1001,
+   "sec": 732.359
+  },
+  {
+   "tag": "incfold_b65",
+   "engine": "_engine7_incremental.js",
+   "params": {
+    "useMoveOrder": 0,
+    "useEvalMemo": 0
+   },
+   "seedBase": 1001,
+   "sec": 94.769
+  },
+  {
+   "tag": "incfold_l8",
+   "engine": "_engine7_incremental.js",
+   "params": {
+    "useMoveOrder": 0,
+    "useEvalMemo": 0
+   },
+   "seedBase": 1001,
+   "sec": 94.843
+  }
+ ],
+ "finished": "2026-09-14T21:37:45.084Z"
+}

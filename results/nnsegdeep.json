@@ -1,0 +1,47 @@
+{
+ "tag": "nnsegdeep",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "after13nn": 1,
+  "deepOnMaxExp": 13
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 82903.9,
+ "median": 80452,
+ "p90": 147448,
+ "best": 175484,
+ "worst": 28128,
+ "top5": [
+  175484,
+  175428,
+  175336,
+  174788,
+  173404
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.8333333333333334,
+  "8192": 0.15833333333333333,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3717,
+ "medianSteps": 3730,
+ "elapsedSec": 963.8,
+ "gamesPerMin": 7.5,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T23:36:29.612Z"
+}

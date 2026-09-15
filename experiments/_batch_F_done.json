@@ -1,0 +1,29 @@
+{
+ "batch": "F",
+ "jobs": [
+  {
+   "tag": "probd5",
+   "engine": "_engine7_prob.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 95.124
+  },
+  {
+   "tag": "probd6",
+   "engine": "_engine7_prob.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 659.81
+  },
+  {
+   "tag": "probd6deep",
+   "engine": "_engine7_prob.js",
+   "params": {
+    "deepOnMaxExp": 13
+   },
+   "seedBase": 1001,
+   "sec": 600.924
+  }
+ ],
+ "finished": "2026-09-14T22:16:44.852Z"
+}

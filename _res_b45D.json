@@ -1,0 +1,37 @@
+{
+ "tag": "b45D",
+ "engine": "_engine7.js",
+ "n": 48,
+ "avg": 70651,
+ "median": 76576,
+ "best": 122728,
+ "top5": [
+  122728,
+  122700,
+  122208,
+  119812,
+  112936
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9791666666666666,
+  "4096": 0.7916666666666666,
+  "8192": 0.125,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "elapsedSec": 124.878,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "base": 4.5,
+  "phaseExp": 14,
+  "wMobility": 200000,
+  "wMerge": 5,
+  "wCorner": 100000,
+  "wDeadEnd": 100000
+ }
+}

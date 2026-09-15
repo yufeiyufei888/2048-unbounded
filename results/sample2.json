@@ -1,0 +1,46 @@
+{
+ "tag": "sample2",
+ "engine": "_engine7_ttfix.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "sampleMode": 2
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 56352.2,
+ "median": 58656,
+ "p90": 80568,
+ "best": 154728,
+ "worst": 6452,
+ "top5": [
+  154728,
+  133076,
+  133012,
+  130776,
+  130624
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9416666666666667,
+  "4096": 0.6166666666666667,
+  "8192": 0.058333333333333334,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.025,
+ "avgSteps": 2632,
+ "medianSteps": 2707,
+ "elapsedSec": 19.1,
+ "gamesPerMin": 377.8,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:11:07.233Z"
+}

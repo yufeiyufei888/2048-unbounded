@@ -1,0 +1,47 @@
+{
+ "tag": "inc_bench",
+ "engine": "_engine7_incremental.js",
+ "engineTag": null,
+ "n": 60,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "useMoveOrder": 0,
+  "useEvalMemo": 0
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1060
+ ],
+ "avg": 69060.1,
+ "median": 71788,
+ "p90": 97964,
+ "best": 132660,
+ "worst": 6764,
+ "top5": [
+  132660,
+  129332,
+  118812,
+  113192,
+  113020
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9666666666666667,
+  "4096": 0.8166666666666667,
+  "8192": 0.11666666666666667,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0333,
+ "avgSteps": 3158,
+ "medianSteps": 3356,
+ "elapsedSec": 25,
+ "gamesPerMin": 144.1,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:14:35.549Z"
+}

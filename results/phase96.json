@@ -1,0 +1,44 @@
+{
+ "tag": "phase96",
+ "engine": "_engine7_phase.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": "(引擎默认)",
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 70652.9,
+ "median": 76524,
+ "p90": 109328,
+ "best": 147444,
+ "worst": 6764,
+ "top5": [
+  147444,
+  131948,
+  128844,
+  128684,
+  124928
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.975,
+  "4096": 0.8166666666666667,
+  "8192": 0.11666666666666667,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.025,
+ "avgSteps": 3232,
+ "medianSteps": 3509,
+ "elapsedSec": 76.1,
+ "gamesPerMin": 94.6,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:12:23.605Z"
+}

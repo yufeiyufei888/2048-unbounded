@@ -1,0 +1,47 @@
+{
+ "tag": "incfold_d6",
+ "engine": "_engine7_incremental.js",
+ "engineTag": null,
+ "n": 240,
+ "depth": 6,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "useMoveOrder": 0,
+  "useEvalMemo": 0
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1240
+ ],
+ "avg": 84224.9,
+ "median": 76744,
+ "p90": 148616,
+ "best": 177184,
+ "worst": 6320,
+ "top5": [
+  177184,
+  175660,
+  174936,
+  173612,
+  173488
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9625,
+  "4096": 0.8,
+  "8192": 0.32083333333333336,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0042,
+ "avgSteps": 3726,
+ "medianSteps": 3548,
+ "elapsedSec": 732.2,
+ "gamesPerMin": 19.7,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:34:35.444Z"
+}

@@ -1,0 +1,30 @@
+{
+ "tag": "baseline16",
+ "engine": "_engine7.js",
+ "n": 16,
+ "avg": 68177.25,
+ "median": 60112,
+ "best": 153308,
+ "top5": [
+  153308,
+  129036,
+  80660,
+  80408,
+  79008
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.75,
+  "8192": 0.125,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "elapsedSec": 34.048,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {}
+}

@@ -1,0 +1,36 @@
+{
+ "tag": "phaseD96",
+ "engine": "_engine7.js",
+ "n": 96,
+ "avg": 65470.75,
+ "median": 61612,
+ "best": 133772,
+ "top5": [
+  133772,
+  131256,
+  129040,
+  122756,
+  122564
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.96875,
+  "4096": 0.71875,
+  "8192": 0.11458333333333333,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.010416666666666666,
+ "elapsedSec": 168.141,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "phaseExp": 14,
+  "wMobility": 200000,
+  "wMerge": 5,
+  "wCorner": 100000,
+  "wDeadEnd": 100000
+ }
+}

@@ -1,0 +1,64 @@
+{
+ "batch": "B",
+ "jobs": [
+  {
+   "tag": "risk005",
+   "engine": "_engine7_risk.js",
+   "params": {
+    "riskLambda": 0.05,
+    "riskMode": 1,
+    "riskPhase": 12
+   },
+   "seedBase": 1001,
+   "sec": 31.596
+  },
+  {
+   "tag": "risk010",
+   "engine": "_engine7_risk.js",
+   "params": {
+    "riskLambda": 0.1,
+    "riskMode": 1,
+    "riskPhase": 12
+   },
+   "seedBase": 1001,
+   "sec": 30.948
+  },
+  {
+   "tag": "risk020",
+   "engine": "_engine7_risk.js",
+   "params": {
+    "riskLambda": 0.2,
+    "riskMode": 1,
+    "riskPhase": 12
+   },
+   "seedBase": 1001,
+   "sec": 31.21
+  },
+  {
+   "tag": "sample1",
+   "engine": "_engine7_ttfix.js",
+   "params": {
+    "sampleMode": 1
+   },
+   "seedBase": 1001,
+   "sec": 20.25
+  },
+  {
+   "tag": "sample2",
+   "engine": "_engine7_ttfix.js",
+   "params": {
+    "sampleMode": 2
+   },
+   "seedBase": 1001,
+   "sec": 19.341
+  },
+  {
+   "tag": "phase96",
+   "engine": "_engine7_phase.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 76.354
+  }
+ ],
+ "finished": "2026-09-14T21:12:23.634Z"
+}

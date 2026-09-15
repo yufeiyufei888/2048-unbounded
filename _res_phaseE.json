@@ -1,0 +1,36 @@
+{
+ "tag": "phaseE",
+ "engine": "_engine7.js",
+ "n": 24,
+ "avg": 69562.5,
+ "median": 71564,
+ "best": 131344,
+ "top5": [
+  131344,
+  113524,
+  110084,
+  80736,
+  80520
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9583333333333334,
+  "4096": 0.7916666666666666,
+  "8192": 0.125,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "elapsedSec": 59.93,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "phaseExp": 14,
+  "wMobility": 500000,
+  "wMerge": 10,
+  "wCorner": 200000,
+  "wDeadEnd": 300000
+ }
+}

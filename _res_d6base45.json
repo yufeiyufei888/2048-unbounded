@@ -1,0 +1,32 @@
+{
+ "tag": "d6base45",
+ "engine": "_engine7.js",
+ "n": 8,
+ "avg": 67501.5,
+ "median": 35380,
+ "best": 157248,
+ "top5": [
+  157248,
+  123132,
+  78844,
+  51004,
+  35380
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.5,
+  "8192": 0.25,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "elapsedSec": 31.635,
+ "depth": 6,
+ "limit": 6,
+ "budget": 30000,
+ "params": {
+  "base": 4.5
+ }
+}

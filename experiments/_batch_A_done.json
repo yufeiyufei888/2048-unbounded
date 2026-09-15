@@ -1,0 +1,20 @@
+{
+ "batch": "A",
+ "jobs": [
+  {
+   "tag": "base240",
+   "engine": "_engine7_baseline.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 162.491
+  },
+  {
+   "tag": "ttfix240",
+   "engine": "_engine7_ttfix.js",
+   "params": null,
+   "seedBase": 1001,
+   "sec": 111.873
+  }
+ ],
+ "finished": "2026-09-14T21:08:53.449Z"
+}

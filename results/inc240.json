@@ -1,0 +1,44 @@
+{
+ "tag": "inc240",
+ "engine": "_engine7_incremental.js",
+ "engineTag": null,
+ "n": 240,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": "(引擎默认)",
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1240
+ ],
+ "avg": 54169.1,
+ "median": 57048,
+ "p90": 80004,
+ "best": 148308,
+ "worst": 7816,
+ "top5": [
+  148308,
+  144060,
+  132344,
+  130472,
+  128340
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9541666666666667,
+  "4096": 0.5708333333333333,
+  "8192": 0.03333333333333333,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0125,
+ "avgSteps": 2553,
+ "medianSteps": 2638,
+ "elapsedSec": 105.9,
+ "gamesPerMin": 135.9,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:14:10.273Z"
+}

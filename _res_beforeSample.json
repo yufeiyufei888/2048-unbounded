@@ -1,0 +1,21 @@
+{
+ "tag": "beforeSample",
+ "engine": "_engine7_before_sample.js",
+ "n": 96,
+ "avg": 34477.458333333336,
+ "median": 35044,
+ "best": 79456,
+ "top5": [
+  79456,
+  76616,
+  71884,
+  71828,
+  70884
+ ],
+ "maxTile": 4096,
+ "earlyRate": 0.16666666666666666,
+ "elapsedSec": 54.899,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000
+}

@@ -1,0 +1,47 @@
+{
+ "tag": "dual30deep",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "dualBase": 3,
+  "deepOnMaxExp": 13
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 84503.2,
+ "median": 80452,
+ "p90": 132716,
+ "best": 168408,
+ "worst": 28128,
+ "top5": [
+  168408,
+  168312,
+  157320,
+  157176,
+  149340
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.8333333333333334,
+  "8192": 0.3,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3761,
+ "medianSteps": 3730,
+ "elapsedSec": 1160.2,
+ "gamesPerMin": 6.2,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T22:43:44.682Z"
+}

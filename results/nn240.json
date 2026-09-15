@@ -1,0 +1,44 @@
+{
+ "tag": "nn240",
+ "engine": "_engine7_nn.js",
+ "engineTag": null,
+ "n": 240,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": "(引擎默认)",
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1240
+ ],
+ "avg": 66142.2,
+ "median": 71200,
+ "p90": 110624,
+ "best": 174408,
+ "worst": 7076,
+ "top5": [
+  174408,
+  157260,
+  155632,
+  148892,
+  148000
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9375,
+  "4096": 0.6875,
+  "8192": 0.10833333333333334,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0083,
+ "avgSteps": 3051,
+ "medianSteps": 3278,
+ "elapsedSec": 74,
+ "gamesPerMin": 194.7,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-14T21:18:01.217Z"
+}

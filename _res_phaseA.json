@@ -1,0 +1,36 @@
+{
+ "tag": "phaseA",
+ "engine": "_engine7.js",
+ "n": 24,
+ "avg": 47423.666666666664,
+ "median": 36996,
+ "best": 79112,
+ "top5": [
+  79112,
+  70168,
+  69740,
+  69452,
+  67480
+ ],
+ "maxTile": 4096,
+ "medianMaxTile": 2048,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.4583333333333333,
+  "8192": 0,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "elapsedSec": 50.767,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "phaseExp": 12,
+  "wMobility": 800000,
+  "wMerge": 20,
+  "wCorner": 500000,
+  "wDeadEnd": 800000
+ }
+}

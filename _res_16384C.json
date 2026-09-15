@@ -1,0 +1,36 @@
+{
+ "tag": "16384C",
+ "engine": "_engine7.js",
+ "n": 24,
+ "avg": 47882.333333333336,
+ "median": 37656,
+ "best": 76428,
+ "top5": [
+  76428,
+  72284,
+  72168,
+  68044,
+  66652
+ ],
+ "maxTile": 4096,
+ "medianMaxTile": 2048,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.4583333333333333,
+  "8192": 0,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "elapsedSec": 53.394,
+ "depth": 5,
+ "limit": 6,
+ "budget": 45000,
+ "params": {
+  "phaseExp": 12,
+  "wMobility": 1000000,
+  "wMerge": 5,
+  "wCorner": 500000,
+  "wDeadEnd": 2000000
+ }
+}
