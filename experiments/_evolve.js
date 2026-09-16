@@ -20,7 +20,6 @@ const EVAL = path.join(__dirname, '_eval2.js');
 const OUTDIR = path.join(ROOT, 'results');
 
 const BASELINE = JSON.parse(fs.readFileSync(path.join(OUTDIR, 'probd6deep.json'), 'utf8'));
-const BASE_AVG = BASELINE.avg;
 
 // 14 配置：每参数双向单侧扫描 + base 细粒度
 const CONFIGS = [
@@ -44,12 +43,29 @@ const CONFIGS = [
   ['evolve_wEmpty_100k', { wEmpty: 100000 }],
   ['evolve_wEmpty_120k', { wEmpty: 120000 }],
   ['evolve_combo_b44e80',  { base: 4.4, wEmpty: 80000 }],
-  ['evolve_combo_b44e100', { base: 4.4, wEmpty: 100000 }]
+  ['evolve_combo_b44e100', { base: 4.4, wEmpty: 100000 }],
+  // ===== 第 2 轮（背景 wEmpty=80k，重扫全部参数的交互效应）=====
+  ['e2_dEmpty2_90k',  { dEmpty2: 90000 }],
+  ['e2_dEmpty2_75k',  { dEmpty2: 75000 }],
+  ['e2_base_44',      { base: 4.4 }],
+  ['e2_base_46',      { base: 4.6 }],
+  ['e2_wSmooth_4',    { wSmooth: 4.0 }],
+  ['e2_wSmooth_8',    { wSmooth: 8.0 }],
+  ['e2_wMono_2',      { wMono: 2.0 }],
+  ['e2_wMono_4',      { wMono: 4.0 }],
+  ['e2_dEmpty1_500k', { dEmpty1: 500000 }],
+  ['e2_dEmpty1_300k', { dEmpty1: 300000 }]
 ];
-const COMMON = { deepOnMaxExp: 13 };
+const bgIdx = process.argv.indexOf('--bgJSON');
+const BG = bgIdx > 0 ? JSON.parse(process.argv[bgIdx + 1]) : null;
+const baseIdx = process.argv.indexOf('--baseline');
+const BASE_AVG = baseIdx > 0 ? parseFloat(process.argv[baseIdx + 1]) : BASELINE.avg;
+const COMMON = Object.assign({ deepOnMaxExp: 13 }, BG || {});
 
 const onlyArg = process.argv.find((a, i) => process.argv[i - 1] === '--only');
 const onlySet = onlyArg ? new Set(onlyArg.split(',')) : null;
+// --bgJSON '{"wEmpty":80000}'：背景参数（合入所有配置的 COMMON）；--baseline N：自定义基线均分
+if (BG) console.log('>>> 背景参数:', JSON.stringify(BG), '| 基线均分:', BASE_AVG);
 
 const results = [];
 for (const [tag, params] of CONFIGS) {

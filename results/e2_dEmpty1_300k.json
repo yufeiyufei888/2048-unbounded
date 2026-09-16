@@ -1,0 +1,48 @@
+{
+ "tag": "e2_dEmpty1_300k",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "wEmpty": 80000,
+  "dEmpty1": 300000
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 85431.5,
+ "median": 79092,
+ "p90": 133036,
+ "best": 173416,
+ "worst": 28128,
+ "top5": [
+  173416,
+  172540,
+  168068,
+  164312,
+  163340
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.85,
+  "8192": 0.2916666666666667,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3794,
+ "medianSteps": 3667,
+ "elapsedSec": 786.8,
+ "gamesPerMin": 9.2,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-16T03:28:28.371Z"
+}
