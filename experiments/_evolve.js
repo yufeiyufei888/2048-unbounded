@@ -54,7 +54,16 @@ const CONFIGS = [
   ['e2_wMono_2',      { wMono: 2.0 }],
   ['e2_wMono_4',      { wMono: 4.0 }],
   ['e2_dEmpty1_500k', { dEmpty1: 500000 }],
-  ['e2_dEmpty1_300k', { dEmpty1: 300000 }]
+  ['e2_dEmpty1_300k', { dEmpty1: 300000 }],
+  // ===== 第 3 轮（nneonneo 借鉴项：merges/sum-pow/mono-min/distinct-depth，背景 wEmpty=80k）=====
+  ['e3_dd',      { depthDistinct: 1 }],
+  ['e3_wM_8',    { wMergePair: 1e8 }],
+  ['e3_wM_10',   { wMergePair: 1e10 }],
+  ['e3_wS_8',    { wSum2: 1e8 }],
+  ['e3_wS_10',   { wSum2: 1e10 }],
+  ['e3_mM',      { monoMinMode: 1 }],
+  ['e3_dd_ws8',  { depthDistinct: 1, wSmooth: 8.0 }],
+  ['e3_ws8_mM',  { wSmooth: 8.0, monoMinMode: 1 }]
 ];
 const bgIdx = process.argv.indexOf('--bgJSON');
 const BG = bgIdx > 0 ? JSON.parse(process.argv[bgIdx + 1]) : null;

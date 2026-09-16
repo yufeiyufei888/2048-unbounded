@@ -80,6 +80,11 @@ let P = {
   wDeadEnd: 0,
   cprobThresh: 1e-4,     // 概率阈值剪枝（0 = 关闭，全展开不剪）
   deepOnMaxExp: 0,       // 最大方块 ≥ 2^该值 时深度 +1（0 = 关闭）
+  // ===== nneonneo 借鉴项（第Ⅴ轮，2026-09-16）=====
+  wMergePair: 0,         // 合并潜力：行/列内相邻相同非零对数 × 权重（nneonneo MERGES 项）
+  wSum2: 0,              // 幂和惩罚：Σ rank^3.5 × 权重（惩罚大数值分散，nneonneo SUM 项）
+  monoMinMode: 0,        // 1 = 单调性惩罚改用 min(inc,dec)（nneonneo 语义），0 = max（原版）
+  depthDistinct: 0,      // 1 = 搜索深度叠加 max(0, 不同非零种类数 − 2)（nneonneo distinct 驱动）
   // 双尺度评价（针对 8192→16384 瓶颈的诊断修复）：
   // 诊断显示首个 8192 出现后 0% 能再造第二个 8192——8192 主项(~2.8e14)淹没
   // 第二链 4096 项(仅主项 0.02%)。dualBase>0 时，当棋盘 maxExp ≥ dualStartExp，
@@ -111,6 +116,12 @@ const COL_DEC = new Float64Array(ROW_LUT_SIZE);
 const COL_SMOOTH = new Float64Array(ROW_LUT_SIZE);
 const ROW_MONO_MAX = new Float64Array(ROW_LUT_SIZE);
 const COL_MONO_MAX = new Float64Array(ROW_LUT_SIZE);
+const ROW_MONO_MIN = new Float64Array(ROW_LUT_SIZE);   // nneonneo min-单调
+const COL_MONO_MIN = new Float64Array(ROW_LUT_SIZE);
+const ROW_MERGE_PAIR = new Float64Array(ROW_LUT_SIZE); // nneonneo merges（相邻同值对）
+const COL_MERGE_PAIR = new Float64Array(ROW_LUT_SIZE);
+const ROW_SUM_POW = new Float64Array(ROW_LUT_SIZE);    // nneonneo Σrank^3.5
+const COL_SUM_POW = new Float64Array(ROW_LUT_SIZE);
 
 function buildTables(base) {
   const SW = new Float64Array(16);
@@ -138,16 +149,22 @@ function buildCommonTables() {
   for (let row = 0; row < ROW_LUT_SIZE; row++) {
     const c0 = (row >> 12) & 0xF, c1 = (row >> 8) & 0xF, c2 = (row >> 4) & 0xF, c3 = row & 0xF;
     const cs = [c0, c1, c2, c3];
-    let emp = 0, smooth = 0, inc = 0, dec = 0;
+    let emp = 0, smooth = 0, inc = 0, dec = 0, merges = 0, sumPow = 0;
     for (let c = 0; c < 4; c++) if (cs[c] === 0) emp++;
+    for (let c = 0; c < 4; c++) if (cs[c] > 0) sumPow += Math.pow(cs[c], 3.5);   // nneonneo SUM_POWER=3.5
     for (let c = 0; c < 3; c++) {
       const a = cs[c], b = cs[c + 1];
       if (a && b) { const d = Math.abs(POW2[a] - POW2[b]); smooth += d; if (b > a) dec += d; else inc += d; }
+      if (a && b && a === b) merges++;                                            // nneonneo merges：相邻相同非零对
     }
     ROW_EMPTY_CNT[row] = emp; ROW_SMOOTH[row] = smooth; ROW_INC[row] = inc; ROW_DEC[row] = dec;
     COL_SMOOTH[row] = smooth; COL_INC[row] = inc; COL_DEC[row] = dec;
     ROW_MONO_MAX[row] = inc > dec ? inc : dec;
     COL_MONO_MAX[row] = inc > dec ? inc : dec;
+    ROW_MONO_MIN[row] = inc > dec ? dec : inc;
+    COL_MONO_MIN[row] = inc > dec ? dec : inc;
+    ROW_MERGE_PAIR[row] = merges; COL_MERGE_PAIR[row] = merges;
+    ROW_SUM_POW[row] = sumPow; COL_SUM_POW[row] = sumPow;
   }
 }
 buildCommonTables();
@@ -292,12 +309,24 @@ function evaluate(lo, hi) {
   } else {
     s = ROW_SNAKE_BY_R[0][r0] + ROW_SNAKE_BY_R[1][r1] + ROW_SNAKE_BY_R[2][r2] + ROW_SNAKE_BY_R[3][r3];
   }
-  let mono = ROW_MONO_MAX[r0] + ROW_MONO_MAX[r1] + ROW_MONO_MAX[r2] + ROW_MONO_MAX[r3];
+  let mono;
+  if (P.monoMinMode) {
+    // nneonneo 语义：惩罚两方向中较好的一个（min），对「双向都不单调」更宽容
+    mono = Math.min(ROW_MONO_MAX[r0], ROW_MONO_MIN[r0]) + Math.min(ROW_MONO_MAX[r1], ROW_MONO_MIN[r1])
+         + Math.min(ROW_MONO_MAX[r2], ROW_MONO_MIN[r2]) + Math.min(ROW_MONO_MAX[r3], ROW_MONO_MIN[r3]);
+  } else {
+    mono = ROW_MONO_MAX[r0] + ROW_MONO_MAX[r1] + ROW_MONO_MAX[r2] + ROW_MONO_MAX[r3];
+  }
   const c0 = ((r0 & 0xF000)) | ((r1 & 0xF000) >>> 4) | ((r2 & 0xF000) >>> 8) | ((r3 & 0xF000) >>> 12);
   const c1 = ((r0 & 0x0F00) << 4) | (r1 & 0x0F00) | ((r2 & 0x0F00) >>> 4) | ((r3 & 0x0F00) >>> 8);
   const c2 = ((r0 & 0x00F0) << 8) | ((r1 & 0x00F0) << 4) | (r2 & 0x00F0) | ((r3 & 0x00F0) >>> 4);
   const c3 = ((r0 & 0x000F) << 12) | ((r1 & 0x000F) << 8) | ((r2 & 0x000F) << 4) | (r3 & 0x000F);
-  mono += COL_MONO_MAX[c0] + COL_MONO_MAX[c1] + COL_MONO_MAX[c2] + COL_MONO_MAX[c3];
+  if (P.monoMinMode) {
+    mono += Math.min(COL_MONO_MAX[c0], COL_MONO_MIN[c0]) + Math.min(COL_MONO_MAX[c1], COL_MONO_MIN[c1])
+          + Math.min(COL_MONO_MAX[c2], COL_MONO_MIN[c2]) + Math.min(COL_MONO_MAX[c3], COL_MONO_MIN[c3]);
+  } else {
+    mono += COL_MONO_MAX[c0] + COL_MONO_MAX[c1] + COL_MONO_MAX[c2] + COL_MONO_MAX[c3];
+  }
   let smooth = ROW_SMOOTH[r0] + ROW_SMOOTH[r1] + ROW_SMOOTH[r2] + ROW_SMOOTH[r3]
              + COL_SMOOTH[c0] + COL_SMOOTH[c1] + COL_SMOOTH[c2] + COL_SMOOTH[c3];
   const empty = ROW_EMPTY_CNT[r0] + ROW_EMPTY_CNT[r1] + ROW_EMPTY_CNT[r2] + ROW_EMPTY_CNT[r3];
@@ -306,6 +335,17 @@ function evaluate(lo, hi) {
   s += empty * P.wEmpty;
   if (empty <= 1) s -= P.dEmpty1;
   else if (empty === 2) s -= P.dEmpty2;
+  // ===== nneonneo 借鉴项（第Ⅴ轮）=====
+  if (P.wMergePair > 0) {
+    const merges = ROW_MERGE_PAIR[r0] + ROW_MERGE_PAIR[r1] + ROW_MERGE_PAIR[r2] + ROW_MERGE_PAIR[r3]
+                 + COL_MERGE_PAIR[c0] + COL_MERGE_PAIR[c1] + COL_MERGE_PAIR[c2] + COL_MERGE_PAIR[c3];
+    s += P.wMergePair * merges;
+  }
+  if (P.wSum2 > 0) {
+    const sumPow = ROW_SUM_POW[r0] + ROW_SUM_POW[r1] + ROW_SUM_POW[r2] + ROW_SUM_POW[r3]
+                 + COL_SUM_POW[c0] + COL_SUM_POW[c1] + COL_SUM_POW[c2] + COL_SUM_POW[c3];
+    s -= P.wSum2 * sumPow;
+  }
 
   if (P.wMobility || P.wMerge || P.wCorner || P.wDeadEnd) {
     const phase = maxExp >= P.phaseExp ? 1 : (maxExp + 1 === P.phaseExp ? 0.35 : 0);
@@ -371,6 +411,15 @@ function collectEmpty(lo, hi) {
   return EMPTY_N;
 }
 const SNAP = []; for (let i = 0; i < 12; i++) SNAP.push(new Int32Array(16));
+function countDistinct(lo, hi) {
+  // 不同非零 rank 种类数（nneonneo count_distinct_tiles）
+  let seen = 0, n = 0, r;
+  r = lo & 0xFFFF;      { for (let k = 12; k >= 0; k -= 4) { const v = (r >>> k) & 0xF; if (v && !(seen & (1 << v))) { seen |= 1 << v; n++; } } }
+  r = (lo >>> 16) & 0xFFFF; { for (let k = 12; k >= 0; k -= 4) { const v = (r >>> k) & 0xF; if (v && !(seen & (1 << v))) { seen |= 1 << v; n++; } } }
+  r = hi & 0xFFFF;      { for (let k = 12; k >= 0; k -= 4) { const v = (r >>> k) & 0xF; if (v && !(seen & (1 << v))) { seen |= 1 << v; n++; } } }
+  r = (hi >>> 16) & 0xFFFF; { for (let k = 12; k >= 0; k -= 4) { const v = (r >>> k) & 0xF; if (v && !(seen & (1 << v))) { seen |= 1 << v; n++; } } }
+  return n;
+}
 function countEmpty(lo, hi) {
   let n = 0, r;
   r = lo & 0xFFFF; if (!(r&0xF000))n++; if(!(r&0x0F00))n++; if(!(r&0x00F0))n++; if(!(r&0x000F))n++;
@@ -512,6 +561,12 @@ function playGame(depth, limit, budget, seed) {
     const empty = countEmpty(lo, hi);
     let d = depth + (empty <= 3 ? 1 : 0);
     if (P.deepOnMaxExp > 0 && maxExp >= P.deepOnMaxExp) d += 1;
+    if (P.depthDistinct) {
+      // nneonneo：depth = max(3, 不同非零种类数 − 2)——种类越多盘面越复杂越要深搜
+      const distinct = countDistinct(lo, hi);
+      const dd = Math.max(3, distinct - 2);
+      if (dd > d) d = Math.min(dd, 9);
+    }
     if (d > 9) d = 9;
     const mv = bestMove(lo, hi, d, limit, budget);
     if (mv < 0) break;

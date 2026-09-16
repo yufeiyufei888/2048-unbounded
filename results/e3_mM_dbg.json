@@ -1,0 +1,47 @@
+{
+ "tag": "e3_mM_dbg",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 4,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "wEmpty": 80000,
+  "monoMinMode": 1
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1004
+ ],
+ "avg": 91939,
+ "median": 73188,
+ "p90": 133364,
+ "best": 133364,
+ "worst": 36988,
+ "top5": [
+  133364,
+  124216,
+  73188,
+  36988
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 8192,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.75,
+  "8192": 0.5,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 4028,
+ "medianSteps": 5127,
+ "elapsedSec": 487.7,
+ "gamesPerMin": 0.5,
+ "procs": 2,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-16T08:42:22.322Z"
+}

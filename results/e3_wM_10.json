@@ -1,0 +1,48 @@
+{
+ "tag": "e3_wM_10",
+ "engine": "_engine7_prob.js",
+ "engineTag": null,
+ "n": 120,
+ "depth": 6,
+ "limit": 6,
+ "budget": 200000,
+ "params": {
+  "deepOnMaxExp": 13,
+  "wEmpty": 80000,
+  "wMergePair": 10000000000
+ },
+ "seedBase": 1001,
+ "seedRange": [
+  1001,
+  1120
+ ],
+ "avg": 31087.8,
+ "median": 32372,
+ "p90": 58664,
+ "best": 72068,
+ "worst": 2568,
+ "top5": [
+  72068,
+  70864,
+  69916,
+  67556,
+  61292
+ ],
+ "maxTile": 4096,
+ "medianMaxTile": 2048,
+ "targetRates": {
+  "2048": 0.6916666666666667,
+  "4096": 0.18333333333333332,
+  "8192": 0,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.1417,
+ "avgSteps": 1575,
+ "medianSteps": 1662,
+ "elapsedSec": 127.2,
+ "gamesPerMin": 56.6,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-16T07:32:30.389Z"
+}
