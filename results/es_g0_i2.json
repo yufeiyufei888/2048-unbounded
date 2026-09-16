@@ -1,0 +1,44 @@
+{
+ "tag": "es_g0_i2",
+ "engine": "_engine8_es.js",
+ "engineTag": null,
+ "n": 60,
+ "depth": 6,
+ "limit": 6,
+ "budget": 45000,
+ "params": "(引擎默认)",
+ "seedBase": 40138,
+ "seedRange": [
+  40138,
+  40197
+ ],
+ "avg": 75740.5,
+ "median": 77004,
+ "p90": 132228,
+ "best": 155424,
+ "worst": 3496,
+ "top5": [
+  155424,
+  154128,
+  148268,
+  147392,
+  134108
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 0.9333333333333333,
+  "4096": 0.7666666666666667,
+  "8192": 0.23333333333333334,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0.0333,
+ "avgSteps": 3403,
+ "medianSteps": 3588,
+ "elapsedSec": 206.3,
+ "gamesPerMin": 17.5,
+ "procs": 30,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-16T17:18:43.519Z"
+}

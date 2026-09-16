@@ -1,0 +1,24 @@
+========================================
+查表权重 CMA-ES 进化 · 运行手册
+========================================
+【状态】全部基础设施已验证就绪：
+  - evolve_tables/current.bin（v7.4 初始表，Float64 2.5MB，10 万盘逐位验证 = v7.4）
+  - _engine8_es.js（查表评估引擎，逐位验证 = v7.4）
+  - experiments/_cma_table.js（sep-CMA-ES 进化器，σ 自适应 + 断点续跑）
+
+【启动命令】（在自己的终端里运行，或让 AI 用前台分段模式推进）
+  cd C:////Users////yufei////WorkBuddy////2048
+  node experiments/_cma_table.js --generations 14 --lambda 12 --gamesPer 2 --sigma0 0.04 --seed0 40001
+
+【说明】
+  - 每代 13 个评估（μ 基准 + 12 个体）× 60 局 incremental d6，约 40 分钟/代
+  - 14 代约 9 小时；中断后加 --resume 从断点继续
+  - 日志：cma_evolve.txt（LOG 双写）；进度：evolve_tables/es_state.json
+  - 每代产出：evolve_tables/gen_N.bin（该代最优 μ 表）
+
+【验收】
+  - es_state.json 的 history 里 bestEver 是否上升、16384 率变化
+  - 最优代 gen_N.bin 复制为 current.bin 后用 probd6deep 240 局独立验证：
+    node experiments/_eval2.js _engine8_es.js 30 8 6 6 200000 es_verify \"null\" 20001
+  - 若 16384 率达 5%+ → 32768 首现在望 → 启动 _engine8_5bit.js 搜索层收尾
+========================================

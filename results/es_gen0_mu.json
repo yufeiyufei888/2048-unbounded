@@ -1,0 +1,44 @@
+{
+ "tag": "es_gen0_mu",
+ "engine": "_engine8_es.js",
+ "engineTag": null,
+ "n": 6,
+ "depth": 6,
+ "limit": 6,
+ "budget": 45000,
+ "params": "(引擎默认)",
+ "seedBase": 40001,
+ "seedRange": [
+  40001,
+  40006
+ ],
+ "avg": 77352,
+ "median": 60492,
+ "p90": 132480,
+ "best": 132480,
+ "worst": 35708,
+ "top5": [
+  132480,
+  104740,
+  80968,
+  60492,
+  49724
+ ],
+ "maxTile": 8192,
+ "medianMaxTile": 4096,
+ "targetRates": {
+  "2048": 1,
+  "4096": 0.8333333333333334,
+  "8192": 0.3333333333333333,
+  "16384": 0,
+  "32768": 0
+ },
+ "earlyRate": 0,
+ "avgSteps": 3421,
+ "medianSteps": 3771,
+ "elapsedSec": 87.6,
+ "gamesPerMin": 4.1,
+ "procs": 6,
+ "node": "v22.22.2",
+ "timestamp": "2026-09-16T17:18:33.983Z"
+}
